@@ -1,4 +1,4 @@
-# tipper-services
+# tippers-services
 Services for IOT systems
 
 ## 1. Project Overview
