@@ -6,54 +6,41 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 from mlflow.exceptions import MlflowException
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-from api.deps import get_db
+from api.deps import get_session
 from api.main import app
-from datawhisk_shared import OccupancyRow
-
-LAST_OBSERVED = datetime(2026, 4, 14, 2, tzinfo=timezone.utc)
-
-
-@pytest.fixture
-def history_rows() -> list[OccupancyRow]:
-    return [
-        OccupancyRow(
-            spaceid=1,
-            starttime=datetime(2026, 4, 14, 0, tzinfo=timezone.utc),
-            endtime=datetime(2026, 4, 14, 1, tzinfo=timezone.utc),
-            occupancy=10,
-        ),
-        OccupancyRow(
-            spaceid=1,
-            starttime=datetime(2026, 4, 14, 1, tzinfo=timezone.utc),
-            endtime=datetime(2026, 4, 14, 2, tzinfo=timezone.utc),
-            occupancy=20,
-        ),
-    ]
+from datawhisk_shared.base import Base
+from datawhisk_shared.orm import Occupancy
 
 
 @pytest.fixture
-def stub_db(history_rows):
-    class _Stub:
-        def pull_historical_occupancy(self, space_id, start_time, end_time):
-            self.last_call = (space_id, start_time, end_time)
-            return history_rows
-
-        def get_latest_occupancy_end(self, space_id):
-            return LAST_OBSERVED
-
-    return _Stub()
+def sm(tmp_path):
+    url = f"sqlite:///{tmp_path/'test.db'}"
+    engine = create_engine(url)
+    Base.metadata.create_all(engine, tables=[Occupancy.__table__])
+    with Session(engine) as s:
+        s.add_all([
+            Occupancy(spaceid=42, starttime=datetime(2026, 4, 14, 0), endtime=datetime(2026, 4, 14, 1), occupancy=10),
+            Occupancy(spaceid=42, starttime=datetime(2026, 4, 14, 1), endtime=datetime(2026, 4, 14, 2), occupancy=20),
+        ])
+        s.commit()
+    return sessionmaker(bind=engine)
 
 
 @pytest.fixture
-def client(stub_db):
-    app.dependency_overrides[get_db] = lambda: stub_db
+def client(sm):
+    def _get_session():
+        with sm() as s:
+            yield s
+
+    app.dependency_overrides[get_session] = _get_session
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
 def test_default_window_spans_last_observed(client):
-    # Defaults: start=last_observed-24h, end=last_observed+24h → both history and forecast.
     fake_model = MagicMock()
     fake_model.predict.return_value = [5.0] * 24
     with patch("api.routes.occupancy._resolver") as resolver:

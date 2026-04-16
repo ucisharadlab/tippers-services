@@ -5,4 +5,4 @@
 #   2. Define `thermal_model` mirroring assets/occupancy.py.
 #   3. Append it to `all_assets` in orchestration/assets/__init__.py.
 #
-# Shares DataWhiskDBResource + MLflow tracking. No infra changes required.
+# Shares DataWhiskSessionResource + MLflow tracking. No infra changes required.

@@ -1,31 +1,37 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+from typing import Iterator
 
 from dagster import materialize
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
-from datawhisk_shared import OccupancyRow
+from datawhisk_shared.base import Base
+from datawhisk_shared.orm import Occupancy
 from orchestration.assets.occupancy import occupancy_model
-from orchestration.resources import DataWhiskDBResource
+from orchestration.resources import DataWhiskSessionResource
 
 
-class _StubClient:
-    def pull_historical_occupancy(self, space_id, start_time, end_time):
-        return [
-            OccupancyRow(
-                spaceid=space_id,
-                starttime=datetime(2026, 4, 14, 0, tzinfo=timezone.utc),
-                endtime=datetime(2026, 4, 14, 1, tzinfo=timezone.utc),
-                occupancy=10,
-            )
-        ]
-
-
-class _StubResource(DataWhiskDBResource):
+class _StubResource(DataWhiskSessionResource):
     database_url: str = "stub://unused"
 
-    def get_client(self):
-        return _StubClient()
+    @contextmanager
+    def session(self) -> Iterator[Session]:
+        engine = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(engine, tables=[Occupancy.__table__])
+        sm = sessionmaker(bind=engine)
+        with sm() as s:
+            now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
+            s.add(Occupancy(
+                spaceid=1,
+                starttime=now - timedelta(hours=1),
+                endtime=now,
+                occupancy=10,
+            ))
+            s.commit()
+            yield s
 
 
 def test_asset_materializes():
