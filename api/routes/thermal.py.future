@@ -1,0 +1,8 @@
+# Phase 2 placeholder for the thermal service.
+#
+# To activate:
+#   1. Rename this file to `thermal.py`.
+#   2. Add `app.include_router(thermal.router)` in api/main.py.
+#   3. Register a new MLflow model name, e.g. "thermal".
+#
+# Mirror api/routes/occupancy.py. No infra changes required.

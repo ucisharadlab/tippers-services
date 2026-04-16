@@ -1,0 +1,12 @@
+[project]
+name = "datawhisk-dev"
+version = "0.0.0"
+description = "Root dev environment (tests, lint). Actual services live in ./api, ./orchestration, ./shared."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["shared", "api", "orchestration"]
+filterwarnings = [
+    "ignore:The default datetime adapter is deprecated:DeprecationWarning",
+]

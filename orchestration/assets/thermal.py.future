@@ -1,0 +1,8 @@
+# Phase 2 placeholder for the thermal model asset.
+#
+# To activate:
+#   1. Rename this file to `thermal.py`.
+#   2. Define `thermal_model` mirroring assets/occupancy.py.
+#   3. Append it to `all_assets` in orchestration/assets/__init__.py.
+#
+# Shares DataWhiskDBResource + MLflow tracking. No infra changes required.

@@ -1,0 +1,26 @@
+from __future__ import annotations
+
+from fastapi import FastAPI, HTTPException
+
+from api.deps import get_db
+from api.routes import models, occupancy
+
+app = FastAPI(title="DataWhisk API", version="0.1.0")
+app.include_router(occupancy.router)
+app.include_router(models.router)
+
+
+@app.get("/health", tags=["meta"])
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.get("/ready", tags=["meta"])
+def ready() -> dict:
+    try:
+        db = get_db()
+        with db._engine.connect() as conn:
+            conn.exec_driver_sql("SELECT 1")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"db unreachable: {e}") from e
+    return {"status": "ready"}

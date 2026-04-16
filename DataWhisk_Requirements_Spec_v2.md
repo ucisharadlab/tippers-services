@@ -1,5 +1,4 @@
-# tipper-services
-Services for IOT systems
+# Requirements Specification: DataWhisk Services (v2.0)
 
 ## 1. Project Overview
 DataWhisk is a multi-service platform designed to provide occupancy forecasting and thermal energy modeling for building spaces. The system utilizes a decoupled architecture where a FastAPI gateway interacts with a Dagster orchestration engine to handle long-running analytical tasks.
@@ -58,9 +57,7 @@ A dedicated table managed by Vivek to track the state of all models:
 | :--- | :--- | :--- | :--- |
 | **Week 1** | Data profiling and cleaning of occupancy tables. | Isolate cooling/heating events from sensor data. | Dockerize Dagster + FastAPI; Setup GraphQL client logic. |
 | **Week 2** | Define Occupancy Assets in Dagster; Train initial models. | Define Thermal Assets ($E_c$/$E_h$); Train regression models. | Build the Model Mapping Table; Create FastAPI trigger endpoints. |
-| **Week 3** | Validate predictions; Fine-tune ensemble logic. | Finalize energy/time calculation logic. | End-to-end integration: API $
-ightarrow$ Dagster $
-ightarrow$ Asset update. |
+| **Week 3** | Validate predictions; Fine-tune ensemble logic. | Finalize energy/time calculation logic. | End-to-end integration: API $ightarrow$ Dagster $ightarrow$ Asset update. |
 
 ---
 

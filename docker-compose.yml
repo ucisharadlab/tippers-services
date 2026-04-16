@@ -1,0 +1,86 @@
+x-dagster-env: &dagster_env
+  DAGSTER_HOME: /opt/dagster/dagster_home
+  DATABASE_URL: ${DATABASE_URL}
+  MLFLOW_TRACKING_URI: http://mlflow:5000
+  POSTGRES_USER: ${POSTGRES_USER:-dw}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dw}
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dw}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dw} -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: infra/mlflow/Dockerfile
+    command: >
+      mlflow server
+        --host 0.0.0.0 --port 5000
+        --backend-store-uri postgresql://${POSTGRES_USER:-dw}:${POSTGRES_PASSWORD:-dw}@postgres:5432/mlflow
+        --default-artifact-root /mlartifacts
+        --serve-artifacts
+    volumes:
+      - mlflow_artifacts:/mlartifacts
+    ports:
+      - "5001:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    ports:
+      - "8000:8000"
+    depends_on:
+      mlflow:
+        condition: service_started
+
+  dagster_webserver:
+    build:
+      context: .
+      dockerfile: orchestration/Dockerfile
+    command: dagster-webserver -h 0.0.0.0 -p 3000 -w /opt/dagster/app/workspace.yaml
+    environment: *dagster_env
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+
+  dagster_daemon:
+    build:
+      context: .
+      dockerfile: orchestration/Dockerfile
+    command: dagster-daemon run
+    environment: *dagster_env
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  mlflow_artifacts:
+  dagster_home:
