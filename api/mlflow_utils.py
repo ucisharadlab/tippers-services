@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from threading import Lock
 from typing import Any, Iterator
 
 import mlflow
 import mlflow.pyfunc
 import mlflow.sklearn
+from mlflow.entities.model_registry import ModelVersion
 from mlflow.tracking import MlflowClient
 
 DEFAULT_ALIAS = "production"
@@ -65,10 +67,14 @@ def log_and_register_sklearn(
 
 class ModelResolver:
     """
-    Space-aware loader. Given a space_id, returns a ready-to-predict pyfunc
-    model loaded from the current `@{alias}` version in the MLflow registry.
+    Space-aware search + load for the MLflow registry.
 
-    Callers only know their space_id; this class handles all MLflow URIs.
+    Inference flow per request:
+      1. Search: ask the registry which ModelVersion the `@{alias}` points at
+         for this space's registered model (`{model_type}_space_{space_id}`).
+      2. Load: fetch that exact version's pyfunc, cached by (name, version)
+         so alias flips are picked up on the next request but repeat calls
+         within the same version skip the artifact fetch.
     """
 
     def __init__(
@@ -80,6 +86,8 @@ class ModelResolver:
         self._alias = alias
         self._model_type = model_type
         self._client = client or MlflowClient()
+        self._cache: dict[tuple[str, str], Any] = {}
+        self._lock = Lock()
 
     def registered_name(self, space_id: int) -> str:
         return model_name_for_space(space_id, self._model_type)
@@ -87,12 +95,59 @@ class ModelResolver:
     def resolve_uri(self, space_id: int) -> str:
         return f"models:/{self.registered_name(space_id)}@{self._alias}"
 
-    def resolve_version(self, space_id: int):
-        """Return the MLflow ModelVersion currently pointed at by the alias."""
+    def resolve_version(self, space_id: int) -> ModelVersion:
+        """Return the ModelVersion currently pointed at by the alias.
+        Raises MlflowException(RESOURCE_DOES_NOT_EXIST) if the model isn't
+        registered or the alias isn't assigned."""
         return self._client.get_model_version_by_alias(
             self.registered_name(space_id), self._alias
         )
 
-    def load(self, space_id: int):
-        """Load-on-request; no caching in Phase 1."""
-        return mlflow.pyfunc.load_model(self.resolve_uri(space_id))
+    def search_versions(self, space_id: int) -> list[ModelVersion]:
+        """All versions of a space's registered model, newest first — used
+        when diagnosing 'why isn't my promotion visible?'."""
+        name = self.registered_name(space_id)
+        return self._client.search_model_versions(
+            f"name='{name}'", order_by=["version_number DESC"]
+        )
+
+    def list_spaces(self) -> list[int]:
+        """Space ids that currently have a `@{alias}` version registered.
+        Scans registered models whose name matches the per-space convention."""
+        prefix = f"{self._model_type}_space_"
+        spaces: list[int] = []
+        for rm in self._client.search_registered_models(
+            filter_string=f"name LIKE '{prefix}%'"
+        ):
+            try:
+                self._client.get_model_version_by_alias(rm.name, self._alias)
+            except Exception:
+                continue
+            try:
+                spaces.append(int(rm.name[len(prefix):]))
+            except ValueError:
+                continue
+        return sorted(spaces)
+
+    def load(self, space_id: int) -> tuple[Any, ModelVersion]:
+        """Resolve alias → version (search), then load pyfunc (load).
+        Returns (pyfunc_model, version_metadata). Cached per (name, version)."""
+        name = self.registered_name(space_id)
+        mv = self._client.get_model_version_by_alias(name, self._alias)
+        key = (name, mv.version)
+        with self._lock:
+            model = self._cache.get(key)
+            if model is None:
+                model = mlflow.pyfunc.load_model(f"models:/{name}/{mv.version}")
+                self._cache[key] = model
+        return model, mv
+
+    def invalidate(self, space_id: int | None = None) -> None:
+        """Drop cached pyfuncs. Without an arg, clears everything; with a
+        space_id, only evicts that space's entries."""
+        with self._lock:
+            if space_id is None:
+                self._cache.clear()
+                return
+            name = self.registered_name(space_id)
+            self._cache = {k: v for k, v in self._cache.items() if k[0] != name}

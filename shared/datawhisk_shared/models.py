@@ -36,3 +36,50 @@ class Space(BaseModel):
     # coordinate[] arrives as a list of tuples/strings from psycopg; keep permissive.
     vertices: list[Any] | None = None
     gps_vertices: list[Any] | None = None
+
+
+class Sensor(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    sensor_id: str
+    sensor_type: str | None = None
+    space_id: int | None = None
+
+
+class ThermometerObservation(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    sensor_id: str
+    timestamp: datetime
+    temperature: float
+
+    @field_validator("timestamp", mode="after")
+    @classmethod
+    def _assume_utc(cls, v: datetime) -> datetime:
+        return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v
+
+
+class WemoObservation(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    sensor_id: str
+    timestamp: datetime
+    current_power: float
+
+    @field_validator("timestamp", mode="after")
+    @classmethod
+    def _assume_utc(cls, v: datetime) -> datetime:
+        return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v
+
+
+class WiFiAPObservation(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    sensor_id: str
+    timestamp: datetime
+    client_count: int
+
+    @field_validator("timestamp", mode="after")
+    @classmethod
+    def _assume_utc(cls, v: datetime) -> datetime:
+        return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v
