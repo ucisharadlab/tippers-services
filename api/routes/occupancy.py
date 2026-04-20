@@ -67,18 +67,17 @@ def get_occupancy(
     model_version: str | None = None
     if future:
         try:
-            model = _resolver.load(space_id)
+            model, version = _resolver.load(space_id)
         except MlflowException as e:
+            if getattr(e, "error_code", "") == "RESOURCE_DOES_NOT_EXIST":
+                raise HTTPException(404, f"no @production model for space {space_id}") from e
             raise HTTPException(503, "model not ready") from e
         predictions = model.predict([[i] for i in range(len(future))])
         forecast = [
             ForecastInterval(starttime=s, endtime=e, predicted_occupancy=float(p))
             for (s, e), p in zip(future, predictions)
         ]
-        try:
-            model_version = str(_resolver.resolve_version(space_id).version)
-        except Exception:
-            pass
+        model_version = str(version.version)
 
     return OccupancyResponse(
         space_id=space_id,
