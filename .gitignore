@@ -10,3 +10,5 @@ dist/
 build/
 .DS_Store
 mlruns/
+artifacts/
+csv_files/
