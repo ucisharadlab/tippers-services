@@ -7,6 +7,10 @@ requires-python = ">=3.11"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["shared", "api", "orchestration"]
+addopts = "-m 'not e2e'"
+markers = [
+    "e2e: end-to-end tests requiring the docker compose stack; run with `pytest -m e2e`",
+]
 filterwarnings = [
     "ignore:The default datetime adapter is deprecated:DeprecationWarning",
 ]
