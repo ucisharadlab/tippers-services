@@ -83,3 +83,20 @@ class WiFiAPObservation(BaseModel):
     @classmethod
     def _assume_utc(cls, v: datetime) -> datetime:
         return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v
+
+
+class ModelSpaceMappingRow(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    space_id: int
+    occupancy_model_uri: str | None = None
+    thermal_model_uri: str | None = None
+    last_trained: datetime | None = None
+    last_run_id: str | None = None
+
+    @field_validator("last_trained", mode="after")
+    @classmethod
+    def _assume_utc(cls, v: datetime | None) -> datetime | None:
+        if v is None:
+            return v
+        return v.replace(tzinfo=timezone.utc) if v.tzinfo is None else v

@@ -45,3 +45,17 @@ class Occupancy(Base):
     __mapper_args__ = {
         "primary_key": [spaceid, starttime, endtime],
     }
+
+
+class ModelSpaceMapping(Base):
+    """DataWhisk-owned state: which model (MLflow URI or Dagster asset key) is
+    currently associated with each space, plus the last Dagster run that
+    materialized it. Written by the training assets, read by the API."""
+
+    __tablename__ = "model_space_mapping"
+
+    space_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    occupancy_model_uri: Mapped[str | None] = mapped_column(Text, nullable=True)
+    thermal_model_uri: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_trained: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_run_id: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import dagster as dg
 from sqlalchemy import select
 
-from datawhisk_shared import OccupancyRow
+from datawhisk_shared import OccupancyRow, upsert_model_mapping
 from datawhisk_shared.orm import Occupancy
 from orchestration.resources import DataWhiskSessionResource
 
@@ -28,6 +28,8 @@ def occupancy_model(
     start_naive = start.astimezone(timezone.utc).replace(tzinfo=None)
     end_naive = end.astimezone(timezone.utc).replace(tzinfo=None)
 
+    model_uri = f"models:/occupancy_space_{config.space_id}@production"
+
     with db.session() as session:
         orm_rows = session.scalars(
             select(Occupancy)
@@ -38,18 +40,28 @@ def occupancy_model(
         ).all()
         rows = [OccupancyRow.model_validate(r) for r in orm_rows]
 
-    context.log.info(f"pulled {len(rows)} rows for space_id={config.space_id}")
+        context.log.info(f"pulled {len(rows)} rows for space_id={config.space_id}")
 
-    # TODO(Gabriel): training logic goes here. When implemented:
-    #     with mlflow.start_run() as run:
-    #         mlflow.sklearn.log_model(sk_model=model, name="model",
-    #                                   registered_model_name=...)
+        # TODO(Gabriel): training logic goes here. When implemented:
+        #     with mlflow.start_run() as run:
+        #         mlflow.sklearn.log_model(sk_model=model, name="model",
+        #                                   registered_model_name=...)
+
+        upsert_model_mapping(
+            session,
+            space_id=config.space_id,
+            last_run_id=context.run.run_id,
+            occupancy_model_uri=model_uri,
+            last_trained=end,
+        )
 
     return dg.MaterializeResult(
         metadata={
             "rows": len(rows),
             "space_id": config.space_id,
             "lookback_days": config.lookback_days,
+            "occupancy_model_uri": model_uri,
+            "run_id": context.run.run_id,
             "training_status": "placeholder — no model produced",
         }
     )
