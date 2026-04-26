@@ -9,8 +9,9 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sqlalchemy import select
 from xgboost import XGBRegressor
  
-from orchestration.mlflow_utils import log_and_register_sklearn
+from orchestration.mlflow_utils import DEFAULT_ALIAS, log_and_register_sklearn
 from datawhisk_shared import OccupancyRow
+from datawhisk_shared.mapping import upsert_model_mapping
 from datawhisk_shared.orm import Occupancy
 from orchestration.resources import DataWhiskSessionResource
 
@@ -117,7 +118,19 @@ def occupancy_model(context, db: DataWhiskSessionResource) -> dg.MaterializeResu
         context.log.info(f"training space_id={space_id} from {csv_path.name}")
  
         results[space_id] = _train_for_space(df, space_id, context)
- 
+
+    with db.session() as session:
+        for space_id, r in results.items():
+            if r["status"] != "trained":
+                continue
+            uri = f"models:/{r['mlflow_model']}@{DEFAULT_ALIAS}"
+            upsert_model_mapping(
+                session,
+                space_id=space_id,
+                last_run_id=context.run_id,
+                occupancy_model_uri=uri,
+            )
+
     trained = [s for s, r in results.items() if r["status"] == "trained"]
     skipped = [s for s, r in results.items() if r["status"] != "trained"]
     avg_rmse = (
