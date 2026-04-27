@@ -1,0 +1,16 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchOccupancy } from "../api/occupancy";
+
+export function useOccupancy(
+  spaceId: number | null,
+  start: Date,
+  end: Date,
+) {
+  return useQuery({
+    queryKey: ["occupancy", spaceId, start.toISOString(), end.toISOString()],
+    queryFn: () => fetchOccupancy(spaceId as number, start, end),
+    enabled: spaceId !== null,
+    staleTime: 60_000,
+    retry: 1,
+  });
+}
