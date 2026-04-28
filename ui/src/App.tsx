@@ -2,7 +2,7 @@ import { useState } from "react";
 import { OccupancyForm, type OccupancyFormValues } from "./components/OccupancyForm";
 import { OccupancyChart } from "./components/OccupancyChart";
 import { MetadataStrip } from "./components/MetadataStrip";
-import { useOccupancy } from "./hooks/useOccupancy";
+import { useOccupancy, useSpaceIds } from "./hooks/useOccupancy";
 
 function defaultRange(): OccupancyFormValues {
   const end = new Date();
@@ -14,6 +14,7 @@ function defaultRange(): OccupancyFormValues {
 
 export default function App() {
   const [params, setParams] = useState<OccupancyFormValues>(defaultRange);
+  const { data: spaceIds = [], isLoading: isLoadingSpaces } = useSpaceIds();
   const { data, isLoading, isFetching, error } = useOccupancy(
     params.spaceId,
     params.start,
@@ -34,6 +35,8 @@ export default function App() {
           initial={params}
           onSubmit={setParams}
           isLoading={isLoading || isFetching}
+          spaceIds={spaceIds}
+          isLoadingSpaces={isLoadingSpaces}
         />
       </div>
 
