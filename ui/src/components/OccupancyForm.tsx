@@ -10,6 +10,8 @@ interface Props {
   initial: OccupancyFormValues;
   onSubmit: (values: OccupancyFormValues) => void;
   isLoading: boolean;
+  spaceIds: number[];
+  isLoadingSpaces: boolean;
 }
 
 function toLocalInput(d: Date): string {
@@ -17,7 +19,7 @@ function toLocalInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
+export function OccupancyForm({ initial, onSubmit, isLoading, spaceIds, isLoadingSpaces }: Props) {
   const [spaceId, setSpaceId] = useState<string>(String(initial.spaceId));
   const [start, setStart] = useState<string>(toLocalInput(initial.start));
   const [end, setEnd] = useState<string>(toLocalInput(initial.end));
@@ -40,13 +42,18 @@ export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
     >
       <label className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Space ID</span>
-        <input
-          type="number"
+        <select
           value={spaceId}
           onChange={(e) => setSpaceId(e.target.value)}
-          className="w-32 rounded border border-slate-300 px-3 py-2"
+          disabled={isLoadingSpaces}
+          className="w-36 rounded border border-slate-300 px-3 py-2"
           required
-        />
+        >
+          {isLoadingSpaces && <option value="">Loading…</option>}
+          {spaceIds.map((id) => (
+            <option key={id} value={id}>{id}</option>
+          ))}
+        </select>
       </label>
       <label className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Start</span>

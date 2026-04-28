@@ -2,6 +2,12 @@ import type { OccupancyResponse } from "../types/api";
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
+export async function fetchSpaceIds(): Promise<number[]> {
+  const res = await fetch(`${BASE}/services/occupancy/spaces`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return res.json();
+}
+
 export async function fetchOccupancy(
   spaceId: number,
   start: Date,

@@ -1,5 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchOccupancy } from "../api/occupancy";
+import { fetchOccupancy, fetchSpaceIds } from "../api/occupancy";
+
+export function useSpaceIds() {
+  return useQuery({
+    queryKey: ["spaceIds"],
+    queryFn: fetchSpaceIds,
+    staleTime: 5 * 60_000,
+  });
+}
 
 export function useOccupancy(
   spaceId: number | null,
