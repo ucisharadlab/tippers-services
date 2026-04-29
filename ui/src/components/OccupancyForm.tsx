@@ -35,24 +35,8 @@ export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
     >
       <div className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Space ID</span>
-<<<<<<< Updated upstream
-        <select
-          value={spaceId}
-          onChange={(e) => setSpaceId(e.target.value)}
-          disabled={isLoadingSpaces}
-          className="w-36 rounded border border-slate-300 px-3 py-2"
-          required
-        >
-          {isLoadingSpaces && <option value="">Loading…</option>}
-          {spaceIds.map((id) => (
-            <option key={id} value={id}>{id}</option>
-          ))}
-        </select>
-      </label>
-=======
         <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
       </div>
->>>>>>> Stashed changes
       <label className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Start</span>
         <input
