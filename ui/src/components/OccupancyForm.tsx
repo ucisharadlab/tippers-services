@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { SpaceTree } from "./SpaceTree";
 
 export interface OccupancyFormValues {
   spaceId: number;
@@ -10,8 +11,6 @@ interface Props {
   initial: OccupancyFormValues;
   onSubmit: (values: OccupancyFormValues) => void;
   isLoading: boolean;
-  spaceIds: number[];
-  isLoadingSpaces: boolean;
 }
 
 function toLocalInput(d: Date): string {
@@ -19,20 +18,14 @@ function toLocalInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function OccupancyForm({ initial, onSubmit, isLoading, spaceIds, isLoadingSpaces }: Props) {
-  const [spaceId, setSpaceId] = useState<string>(String(initial.spaceId));
+export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
+  const [spaceId, setSpaceId] = useState<number>(initial.spaceId);
   const [start, setStart] = useState<string>(toLocalInput(initial.start));
   const [end, setEnd] = useState<string>(toLocalInput(initial.end));
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const id = parseInt(spaceId, 10);
-    if (Number.isNaN(id)) return;
-    onSubmit({
-      spaceId: id,
-      start: new Date(start),
-      end: new Date(end),
-    });
+    onSubmit({ spaceId, start: new Date(start), end: new Date(end) });
   }
 
   return (
@@ -40,27 +33,10 @@ export function OccupancyForm({ initial, onSubmit, isLoading, spaceIds, isLoadin
       onSubmit={handleSubmit}
       className="flex flex-wrap items-end gap-4 rounded-md border border-slate-200 bg-white p-4 shadow-sm"
     >
-      <label className="flex flex-col text-sm">
+      <div className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Space ID</span>
-        <select
-          value={spaceId}
-          onChange={(e) => setSpaceId(e.target.value)}
-          disabled={isLoadingSpaces}
-          className="w-36 rounded border border-slate-300 px-3 py-2"
-          required
-        >
-          {isLoadingSpaces ? (
-            <option value="">Loading…</option>
-          ) : (
-            <>
-              <option value="" disabled>Select a space</option>
-              {spaceIds.map((id) => (
-                <option key={id} value={id}>{id}</option>
-              ))}
-            </>
-          )}
-        </select>
-      </label>
+        <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
+      </div>
       <label className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Start</span>
         <input
