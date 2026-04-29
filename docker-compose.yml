@@ -29,7 +29,8 @@ services:
       mlflow server
         --host 0.0.0.0 --port 5000
         --backend-store-uri postgresql://${POSTGRES_USER:-dw}:${POSTGRES_PASSWORD:-dw}@postgres:5432/mlflow
-        --default-artifact-root /mlartifacts
+        --artifacts-destination /mlartifacts
+        --default-artifact-root mlflow-artifacts:/
         --serve-artifacts
     volumes:
       - mlflow_artifacts:/mlartifacts
