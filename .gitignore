@@ -12,4 +12,3 @@ build/
 mlruns/
 artifacts/
 csv_files/
-mlflow.db
