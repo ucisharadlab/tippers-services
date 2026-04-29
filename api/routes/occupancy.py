@@ -18,14 +18,6 @@ _BUCKET = timedelta(hours=1)
 _resolver = ModelResolver(model_type="occupancy", alias="production")
 
 
-@router.get("/spaces", response_model=list[int])
-def list_spaces(session: SessionDep) -> list[int]:
-    rows = session.scalars(
-        select(Occupancy.spaceid).distinct().order_by(Occupancy.spaceid)
-    ).all()
-    return [r for r in rows if r is not None]
-
-
 def _to_db(dt: datetime) -> datetime:
     """Tippers stores timestamps without tz; strip after normalizing to UTC."""
     return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
