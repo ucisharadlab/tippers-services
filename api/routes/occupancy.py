@@ -23,6 +23,15 @@ def _to_db(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
 
 
+@router.get("/spaces", response_model=list[int])
+def list_spaces(session: SessionDep) -> list[int]:
+    return list(
+        session.scalars(
+            select(func.distinct(Occupancy.spaceid)).order_by(Occupancy.spaceid)
+        ).all()
+    )
+
+
 @router.get("/{space_id}", response_model=OccupancyResponse)
 def get_occupancy(
     space_id: int,

@@ -29,7 +29,8 @@ services:
       mlflow server
         --host 0.0.0.0 --port 5000
         --backend-store-uri postgresql://${POSTGRES_USER:-dw}:${POSTGRES_PASSWORD:-dw}@postgres:5432/mlflow
-        --default-artifact-root /mlartifacts
+        --artifacts-destination /mlartifacts
+        --default-artifact-root mlflow-artifacts:/
         --serve-artifacts
     volumes:
       - mlflow_artifacts:/mlartifacts
@@ -64,6 +65,7 @@ services:
     environment: *dagster_env
     volumes:
       - dagster_home:/opt/dagster/dagster_home
+      - ./by_room_data:/opt/dagster/app/by_room_data:ro
     ports:
       - "3000:3000"
     depends_on:
@@ -80,6 +82,7 @@ services:
     environment: *dagster_env
     volumes:
       - dagster_home:/opt/dagster/dagster_home
+      - ./by_room_data:/opt/dagster/app/by_room_data:ro
     depends_on:
       postgres:
         condition: service_healthy
