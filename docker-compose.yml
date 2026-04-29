@@ -64,6 +64,7 @@ services:
     environment: *dagster_env
     volumes:
       - dagster_home:/opt/dagster/dagster_home
+      - ./by_room_data:/opt/dagster/app/by_room_data:ro
     ports:
       - "3000:3000"
     depends_on:
@@ -80,6 +81,7 @@ services:
     environment: *dagster_env
     volumes:
       - dagster_home:/opt/dagster/dagster_home
+      - ./by_room_data:/opt/dagster/app/by_room_data:ro
     depends_on:
       postgres:
         condition: service_healthy
