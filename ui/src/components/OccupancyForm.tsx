@@ -49,10 +49,16 @@ export function OccupancyForm({ initial, onSubmit, isLoading, spaceIds, isLoadin
           className="w-36 rounded border border-slate-300 px-3 py-2"
           required
         >
-          {isLoadingSpaces && <option value="">Loading…</option>}
-          {spaceIds.map((id) => (
-            <option key={id} value={id}>{id}</option>
-          ))}
+          {isLoadingSpaces ? (
+            <option value="">Loading…</option>
+          ) : (
+            <>
+              <option value="" disabled>Select a space</option>
+              {spaceIds.map((id) => (
+                <option key={id} value={id}>{id}</option>
+              ))}
+            </>
+          )}
         </select>
       </label>
       <label className="flex flex-col text-sm">
