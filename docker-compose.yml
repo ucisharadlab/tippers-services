@@ -49,6 +49,8 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       DAGSTER_WEBSERVER_HOST: dagster_webserver
       DAGSTER_WEBSERVER_PORT: "3000"
+    volumes:
+      - mlflow_artifacts:/mlartifacts
     ports:
       - "8000:8000"
     depends_on:
