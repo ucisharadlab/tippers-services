@@ -1,7 +1,8 @@
 fastapi==0.115.0
 uvicorn[standard]==0.44.0
-mlflow==3.4.0
+mlflow==2.17.0
 scikit-learn==1.5.2
+xgboost
 joblib==1.4.2
 python-multipart==0.0.12
 pydantic==2.13.0
