@@ -12,6 +12,7 @@ from mlflow.tracking import MlflowClient
 
 DEFAULT_ALIAS = "production"
 DEFAULT_MODEL_TYPE = "occupancy"
+DEFAULT_EXPERIMENT = "datawhisk"
 
 
 def model_name_for_space(space_id: int, model_type: str = DEFAULT_MODEL_TYPE) -> str:
@@ -33,6 +34,11 @@ def run_for_space(
     Start an MLflow run with `space_id` tagged. The tag is what makes runs
     searchable by tenant and what downstream tooling filters on.
     """
+    # Use a named experiment so MLflow assigns artifact_location = mlflow-artifacts://
+    # (the server's --default-artifact-root). The Default experiment (ID 0) was
+    # created with a bare local path, causing artifacts to land in the ephemeral
+    # container filesystem instead of the shared mlflow_artifacts Docker volume.
+    mlflow.set_experiment(DEFAULT_EXPERIMENT)
     tags = {"space_id": str(space_id)}
     if extra_tags:
         tags.update({k: str(v) for k, v in extra_tags.items()})
