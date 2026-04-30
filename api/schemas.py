@@ -39,3 +39,4 @@ class OccupancyResponse(BaseModel):
     history: list[OccupancyRow]
     forecast: list[ForecastInterval]
     model_version: str | None
+    forecast_error: str | None = None

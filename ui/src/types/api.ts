@@ -19,4 +19,5 @@ export interface OccupancyResponse {
   history: OccupancyRow[];
   forecast: ForecastInterval[];
   model_version: string | null;
+  forecast_error: string | null;
 }
