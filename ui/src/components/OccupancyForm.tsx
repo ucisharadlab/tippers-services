@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { SpaceTree } from "./SpaceTree";
+import { ModelVersionSelector } from "./ModelVersionSelector";
 
 export interface OccupancyFormValues {
   spaceId: number;
@@ -37,6 +38,7 @@ export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
         <span className="mb-1 font-medium text-slate-700">Space ID</span>
         <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
       </div>
+      <ModelVersionSelector key={spaceId} spaceId={spaceId} />
       <label className="flex flex-col text-sm">
         <span className="mb-1 font-medium text-slate-700">Start</span>
         <input
