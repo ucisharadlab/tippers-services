@@ -40,3 +40,9 @@ class OccupancyResponse(BaseModel):
     forecast: list[ForecastInterval]
     model_version: str | None
     forecast_error: str | None = None
+
+
+class PopularTimesResponse(BaseModel):
+    space_id: int
+    # days[0]=Monday … days[6]=Sunday; each inner list has 24 hourly averages (None = no data)
+    days: list[list[float | None]]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
@@ -10,7 +11,7 @@ from sqlalchemy import func, select
 
 from api.deps import SessionDep
 from api.mlflow_utils import ModelResolver
-from api.schemas import ForecastInterval, OccupancyResponse
+from api.schemas import ForecastInterval, OccupancyResponse, PopularTimesResponse
 from datawhisk_shared import OccupancyRow
 from datawhisk_shared.orm import Occupancy
 
@@ -34,6 +35,31 @@ def list_spaces(session: SessionDep) -> list[int]:
             select(func.distinct(Occupancy.spaceid)).order_by(Occupancy.spaceid)
         ).all()
     )
+
+
+@router.get("/{space_id}/popular-times", response_model=PopularTimesResponse)
+def get_popular_times(
+    space_id: int,
+    session: SessionDep,
+) -> PopularTimesResponse:
+    rows = session.scalars(
+        select(Occupancy).where(Occupancy.spaceid == space_id)
+    ).all()
+
+    buckets: dict[int, dict[int, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for row in rows:
+        if row.occupancy is not None:
+            buckets[row.starttime.weekday()][row.starttime.hour].append(row.occupancy)
+
+    days: list[list[float | None]] = []
+    for dow in range(7):
+        hours: list[float | None] = []
+        for hr in range(24):
+            vals = buckets[dow].get(hr)
+            hours.append(round(sum(vals) / len(vals), 1) if vals else None)
+        days.append(hours)
+
+    return PopularTimesResponse(space_id=space_id, days=days)
 
 
 @router.get("/{space_id}", response_model=OccupancyResponse)
