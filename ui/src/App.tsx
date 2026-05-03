@@ -14,13 +14,21 @@ function defaultRange(): OccupancyFormValues {
   return { spaceId: 1, start, end };
 }
 
+function paramsKey(p: OccupancyFormValues) {
+  return `${p.spaceId}-${p.start.toISOString()}-${p.end.toISOString()}`;
+}
+
 export default function App() {
   const [params, setParams] = useState<OccupancyFormValues>(defaultRange);
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
   const { data, isLoading, isFetching, error } = useOccupancy(
     params.spaceId,
     params.start,
     params.end,
   );
+
+  const forecastError = data?.forecast_error ?? null;
+  const showModal = !!forecastError && dismissedKey !== paramsKey(params);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
@@ -43,6 +51,13 @@ export default function App() {
         <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
           {(error as Error).message}
         </div>
+      )}
+
+      {showModal && (
+        <ErrorModal
+          message={forecastError!}
+          onClose={() => setDismissedKey(paramsKey(params))}
+        />
       )}
 
       {data && (

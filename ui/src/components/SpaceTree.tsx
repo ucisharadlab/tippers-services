@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchChildSpaces } from "../api/spaces";
+import { fetchChildSpaces, fetchSensorNames } from "../api/spaces";
 
 const ROOT_SPACE_ID = 1;
 
@@ -9,9 +9,10 @@ interface NodeProps {
   depth: number;
   selectedId: number;
   onSelect: (id: number) => void;
+  names: Record<number, string>;
 }
 
-function SpaceTreeNode({ id, depth, selectedId, onSelect }: NodeProps) {
+function SpaceTreeNode({ id, depth, selectedId, onSelect, names }: NodeProps) {
   const [open, setOpen] = useState(false);
 
   const { data: children, isFetching } = useQuery({
@@ -22,6 +23,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect }: NodeProps) {
   });
 
   const isSelected = id === selectedId;
+  const label = names[id] ? `${id} (${names[id]})` : String(id);
 
   return (
     <div>
@@ -44,7 +46,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect }: NodeProps) {
         >
           {open ? "▼" : "▶"}
         </button>
-        <span>{id}</span>
+        <span>{label}</span>
         {isFetching && <span className="ml-1 text-xs opacity-50">…</span>}
       </div>
       {open && children?.map((childId) => (
@@ -54,6 +56,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect }: NodeProps) {
           depth={depth + 1}
           selectedId={selectedId}
           onSelect={onSelect}
+          names={names}
         />
       ))}
       {open && children?.length === 0 && (
@@ -74,6 +77,12 @@ interface Props {
 }
 
 export function SpaceTree({ selectedId, onSelect }: Props) {
+  const { data: names = {} } = useQuery({
+    queryKey: ["sensorNames"],
+    queryFn: fetchSensorNames,
+    staleTime: 10 * 60_000,
+  });
+
   return (
     <div className="w-48 max-h-64 overflow-y-auto rounded border border-slate-300 bg-white py-1">
       <SpaceTreeNode
@@ -81,6 +90,7 @@ export function SpaceTree({ selectedId, onSelect }: Props) {
         depth={0}
         selectedId={selectedId}
         onSelect={onSelect}
+        names={names}
       />
     </div>
   );
