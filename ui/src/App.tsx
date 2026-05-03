@@ -2,6 +2,8 @@ import { useState } from "react";
 import { OccupancyForm, type OccupancyFormValues } from "./components/OccupancyForm";
 import { OccupancyChart } from "./components/OccupancyChart";
 import { MetadataStrip } from "./components/MetadataStrip";
+import { ErrorModal } from "./components/ErrorModal";
+import { PopularTimesChart } from "./components/PopularTimesChart";
 import { useOccupancy } from "./hooks/useOccupancy";
 
 function defaultRange(): OccupancyFormValues {
@@ -47,6 +49,7 @@ export default function App() {
         <div className="space-y-6">
           <MetadataStrip data={data} />
           <OccupancyChart data={data} />
+          <PopularTimesChart spaceId={data.space_id} />
         </div>
       )}
 
