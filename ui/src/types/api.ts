@@ -19,4 +19,11 @@ export interface OccupancyResponse {
   history: OccupancyRow[];
   forecast: ForecastInterval[];
   model_version: string | null;
+  forecast_error: string | null;
+}
+
+export interface PopularTimesResponse {
+  space_id: number;
+  // days[0]=Monday … days[6]=Sunday; each has 24 hourly averages (null = no data)
+  days: (number | null)[][];
 }
