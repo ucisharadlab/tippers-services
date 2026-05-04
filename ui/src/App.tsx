@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { OccupancyForm, type OccupancyFormValues } from "./components/OccupancyForm";
+import { FetchDataForm } from "./components/FetchDataForm";
 import { OccupancyChart } from "./components/OccupancyChart";
 import { MetadataStrip } from "./components/MetadataStrip";
 import { ErrorModal } from "./components/ErrorModal";
@@ -45,6 +46,10 @@ export default function App() {
           onSubmit={setParams}
           isLoading={isLoading || isFetching}
         />
+      </div>
+
+      <div className="mb-6">
+        <FetchDataForm />
       </div>
 
       {error && (
