@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchChildSpaces, fetchSensorNames } from "../api/spaces";
+import { fetchChildSpaces, fetchSpaceNames } from "../api/spaces";
 
 const ROOT_SPACE_ID = 1;
 
@@ -23,7 +23,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names }: NodeProps) {
   });
 
   const isSelected = id === selectedId;
-  const label = names[id] ? `${id} (${names[id]})` : String(id);
+  const label = names[id] ?? String(id);
 
   return (
     <div>
@@ -78,8 +78,8 @@ interface Props {
 
 export function SpaceTree({ selectedId, onSelect }: Props) {
   const { data: names = {} } = useQuery({
-    queryKey: ["sensorNames"],
-    queryFn: fetchSensorNames,
+    queryKey: ["spaceNames"],
+    queryFn: fetchSpaceNames,
     staleTime: 10 * 60_000,
   });
 
