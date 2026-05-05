@@ -6,8 +6,8 @@ export async function fetchChildSpaces(spaceId: number): Promise<number[]> {
   return res.json();
 }
 
-export async function fetchSensorNames(): Promise<Record<number, string>> {
-  const res = await fetch(`${BASE}/services/spaces/sensor-names`);
+export async function fetchSpaceNames(): Promise<Record<number, string>> {
+  const res = await fetch(`${BASE}/services/spaces/space-names`);
   if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json();
 }
