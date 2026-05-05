@@ -13,6 +13,7 @@ COPY api/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY api/ /app/api/
+COPY occupancy_data_for_spaceid.py /app/occupancy_data_for_spaceid.py
 
 EXPOSE 8000
 

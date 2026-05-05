@@ -20,6 +20,14 @@ def get_sensor_names(session: SessionDep) -> dict[int, str]:
     return {space_id: name for space_id, name in rows}
 
 
+@router.get("/space-names", response_model=dict[int, str])
+def get_space_names(session: SessionDep) -> dict[int, str]:
+    rows = session.execute(
+        select(Space.space_id, Space.space_name).order_by(Space.space_id)
+    ).all()
+    return {space_id: name for space_id, name in rows}
+
+
 @router.get("/{space_id}/children", response_model=list[int])
 def get_child_spaces(space_id: int, session: SessionDep) -> list[int]:
     return list(

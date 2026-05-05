@@ -51,6 +51,7 @@ services:
       DAGSTER_WEBSERVER_PORT: "3000"
     volumes:
       - mlflow_artifacts:/mlartifacts
+      - ./by_room_data:/app/by_room_data
     ports:
       - "8000:8000"
     depends_on:
