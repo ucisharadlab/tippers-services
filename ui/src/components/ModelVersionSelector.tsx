@@ -38,11 +38,17 @@ export function ModelVersionSelector({ spaceId }: Props) {
           onChange={(e) => setSelectedVersion(e.target.value)}
           className="rounded border border-slate-300 px-2 py-2 text-sm"
         >
-          {versions.map((v) => (
-            <option key={v.version} value={v.version}>
-              v{v.version}{v.is_production ? " (production)" : ""}
-            </option>
-          ))}
+          {versions.map((v) => {
+            const metrics =
+              v.rmse != null
+                ? ` (RMSE: ${v.rmse.toFixed(4)}, MAE: ${v.mae?.toFixed(4)})`
+                : "";
+            return (
+              <option key={v.version} value={v.version}>
+                v{v.version}{metrics}{v.is_production ? " — production" : ""}
+              </option>
+            );
+          })}
         </select>
         <button
           type="button"

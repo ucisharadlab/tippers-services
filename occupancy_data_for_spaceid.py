@@ -6,6 +6,10 @@ from sqlalchemy.orm import Session
 
 from datawhisk_shared.orm import Occupancy, Sensor
 
+"""This file is to allow a user to create a CSV file containing all the data
+for a given space_id. The CSV files are what are used to train the models. 
+Additionally, the data ALREADY has to be in the occupancy table first."""
+
 _OUTPUT_DIR = "by_room_data"
 
 

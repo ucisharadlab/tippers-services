@@ -5,6 +5,8 @@ export interface ModelVersion {
   is_production: boolean;
   created_timestamp: number;
   run_id: string;
+  rmse: number | null;
+  mae: number | null;
 }
 
 export async function fetchModelVersions(spaceId: number): Promise<ModelVersion[]> {

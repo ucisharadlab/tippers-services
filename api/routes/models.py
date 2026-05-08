@@ -67,12 +67,23 @@ async def list_model_versions(space_id: int) -> list[dict]:
     except Exception:
         pass
 
+    def _metrics(run_id: str) -> dict:
+        try:
+            tags = client.get_run(run_id).data.tags
+            return {
+                "rmse": float(tags["rmse"]) if "rmse" in tags else None,
+                "mae": float(tags["mae"]) if "mae" in tags else None,
+            }
+        except Exception:
+            return {"rmse": None, "mae": None}
+
     return [
         {
             "version": v.version,
             "is_production": v.version == production_version,
             "created_timestamp": v.creation_timestamp,
             "run_id": v.run_id,
+            **_metrics(v.run_id),
         }
         for v in versions
     ]
