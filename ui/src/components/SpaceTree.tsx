@@ -23,7 +23,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names }: NodeProps) {
   });
 
   const isSelected = id === selectedId;
-  const label = names[id] ?? String(id);
+  const label = `${names[id] ?? id} (${id})`;
 
   return (
     <div>
