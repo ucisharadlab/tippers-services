@@ -49,6 +49,10 @@ services:
       MLFLOW_TRACKING_URI: http://mlflow:5000
       DAGSTER_WEBSERVER_HOST: dagster_webserver
       DAGSTER_WEBSERVER_PORT: "3000"
+      SSH_USER: ${SSH_USER}
+      SSH_PASSWORD: ${SSH_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - mlflow_artifacts:/mlartifacts
       - ./by_room_data:/app/by_room_data

@@ -28,6 +28,14 @@ def _to_db(dt: datetime) -> datetime:
     return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
 
 
+@router.get("/{space_id}/has-data")
+def has_occupancy_data(space_id: int, session: SessionDep) -> dict:
+    count = session.scalar(
+        select(func.count()).where(Occupancy.spaceid == space_id)
+    )
+    return {"has_data": (count or 0) > 0, "row_count": count or 0}
+
+
 @router.get("/spaces", response_model=list[int])
 def list_spaces(session: SessionDep) -> list[int]:
     return list(

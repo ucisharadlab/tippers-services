@@ -61,6 +61,7 @@ export default function App() {
       {showModal && (
         <ErrorModal
           message={forecastError!}
+          spaceId={params.spaceId}
           onClose={() => setDismissedKey(paramsKey(params))}
         />
       )}
