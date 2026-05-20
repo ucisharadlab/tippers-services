@@ -151,3 +151,6 @@ class ModelResolver:
                 return
             name = self.registered_name(space_id)
             self._cache = {k: v for k, v in self._cache.items() if k[0] != name}
+
+
+occupancy_resolver = ModelResolver(model_type=DEFAULT_MODEL_TYPE, alias=DEFAULT_ALIAS)

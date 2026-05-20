@@ -7,7 +7,7 @@ import joblib
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from mlflow.tracking import MlflowClient
 
-from api.mlflow_utils import DEFAULT_ALIAS, log_and_register_sklearn, model_name_for_space
+from api.mlflow_utils import DEFAULT_ALIAS, log_and_register_sklearn, model_name_for_space, occupancy_resolver
 
 router = APIRouter(prefix="/admin/models", tags=["admin"])
 
@@ -97,4 +97,5 @@ async def set_production_version(space_id: int, version: str) -> dict:
         client.set_registered_model_alias(name, DEFAULT_ALIAS, version)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    occupancy_resolver.invalidate(space_id)
     return {"registered_model_name": name, "version": version, "alias": DEFAULT_ALIAS}

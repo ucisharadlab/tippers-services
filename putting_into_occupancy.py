@@ -15,7 +15,7 @@ SSH_USER = os.environ["SSH_USER"]
 SSH_PASSWORD = os.environ["SSH_PASSWORD"]
 
 # --- CONFIG ---
-SPACE_ID = 295
+SPACE_ID = int(os.environ.get("SPACE_ID", 295))
 START_DATE = "2024-04-01 00:00:00"
 END_DATE = "2024-07-31 23:59:00"
 INTERVAL_MINUTES = 30

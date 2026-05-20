@@ -10,7 +10,7 @@ from mlflow.exceptions import MlflowException
 from sqlalchemy import func, select
 
 from api.deps import SessionDep
-from api.mlflow_utils import ModelResolver
+from api.mlflow_utils import occupancy_resolver
 from api.schemas import ForecastInterval, OccupancyResponse, PopularTimesResponse
 from datawhisk_shared import OccupancyRow
 from datawhisk_shared.orm import Occupancy
@@ -20,12 +20,19 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/services/occupancy", tags=["occupancy"])
 
 _BUCKET = timedelta(hours=1)
-_resolver = ModelResolver(model_type="occupancy", alias="production")
 
 
 def _to_db(dt: datetime) -> datetime:
     """Tippers stores timestamps without tz; strip after normalizing to UTC."""
     return dt.astimezone(timezone.utc).replace(tzinfo=None) if dt.tzinfo else dt
+
+
+@router.get("/{space_id}/has-data")
+def has_occupancy_data(space_id: int, session: SessionDep) -> dict:
+    count = session.scalar(
+        select(func.count()).where(Occupancy.spaceid == space_id)
+    )
+    return {"has_data": (count or 0) > 0, "row_count": count or 0}
 
 
 @router.get("/spaces", response_model=list[int])
@@ -110,7 +117,7 @@ def get_occupancy(
     forecast_error: str | None = None
     if future:
         try:
-            model, version = _resolver.load(space_id)
+            model, version = occupancy_resolver.load(space_id)
             feature_df = pd.DataFrame(
                 [
                     {
@@ -137,6 +144,11 @@ def get_occupancy(
             else:
                 log.exception("MLflow error loading model for space %s", space_id)
                 forecast_error = "Model service unavailable — forecast could not be generated."
+        except (OSError, FileNotFoundError):
+            forecast_error = (
+                f"Production model artifacts are missing for space {space_id}. "
+                "Use the Model sidebar to select a different version."
+            )
         except Exception as exc:
             log.exception("Prediction error for space %s", space_id)
             forecast_error = f"Forecast could not be generated — {type(exc).__name__}: {exc}"

@@ -5,5 +5,8 @@ scikit-learn==1.5.2
 xgboost
 joblib==1.4.2
 python-multipart==0.0.12
+paramiko>=3.0,<4
+sshtunnel==0.4.0
+requests>=2.31
 pydantic==2.13.0
 dagster-graphql==1.13.0
