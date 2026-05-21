@@ -2,7 +2,7 @@ import os
 
 from dagster import Definitions, define_asset_job
 
-from orchestration.assets import all_assets, occupancy_model
+from orchestration.assets import all_assets, occupancy_model, thermal_em_model, thermal_etotal_model
 from orchestration.resources import DataWhiskSessionResource
 
 occupancy_training_job = define_asset_job(
@@ -11,9 +11,15 @@ occupancy_training_job = define_asset_job(
     description="Trains/refreshes the occupancy model for a single space_id (set via run config).",
 )
 
+thermal_training_job = define_asset_job(
+    name="thermal_training_job",
+    selection=[thermal_em_model, thermal_etotal_model],
+    description="Trains Em (maintenance) and Etotal (raw HVAC) thermal energy models for all VAV zones.",
+)
+
 defs = Definitions(
     assets=all_assets,
-    jobs=[occupancy_training_job],
+    jobs=[occupancy_training_job, thermal_training_job],
     resources={
         "db": DataWhiskSessionResource(database_url=os.environ["DATABASE_URL"]),
     },

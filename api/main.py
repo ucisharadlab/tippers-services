@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
 
 from api.deps import _sessionmaker
-from api.routes import export, ingest, mapping, models, occupancy, spaces, train
+from api.routes import export, ingest, mapping, models, occupancy, spaces, train, thermal
 
 app = FastAPI(title="DataWhisk API", version="0.1.0")
 app.include_router(occupancy.router)
@@ -14,6 +14,7 @@ app.include_router(models.router)
 app.include_router(train.router)
 app.include_router(mapping.router)
 app.include_router(spaces.router)
+app.include_router(thermal.router)
 
 
 @app.get("/health", tags=["meta"])

@@ -56,6 +56,7 @@ services:
     volumes:
       - mlflow_artifacts:/mlartifacts
       - ./by_room_data:/app/by_room_data
+      - ./data:/app/data:ro
     ports:
       - "8000:8000"
     depends_on:
@@ -73,6 +74,7 @@ services:
     volumes:
       - dagster_home:/opt/dagster/dagster_home
       - ./by_room_data:/opt/dagster/app/by_room_data:ro
+      - ./data:/opt/dagster/app/data:ro
     ports:
       - "3000:3000"
     depends_on:
@@ -90,6 +92,7 @@ services:
     volumes:
       - dagster_home:/opt/dagster/dagster_home
       - ./by_room_data:/opt/dagster/app/by_room_data:ro
+      - ./data:/opt/dagster/app/data:ro
     depends_on:
       postgres:
         condition: service_healthy

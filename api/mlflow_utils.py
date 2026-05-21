@@ -14,6 +14,14 @@ DEFAULT_ALIAS = "production"
 DEFAULT_MODEL_TYPE = "occupancy"
 
 
+def model_name_for_zone(zone_id: str, model_type: str, granularity: str = "local") -> str:
+    """e.g. model_name_for_zone('VAV1.10', 'em', 'local') → 'em_local_VAV1_10'"""
+    if granularity == "global":
+        return f"{model_type}_global"
+    safe = zone_id.replace(".", "_").replace("-", "_")
+    return f"{model_type}_{granularity}_{safe}"
+
+
 def model_name_for_space(space_id: int, model_type: str = DEFAULT_MODEL_TYPE) -> str:
     """
     Matching-table: space_id → Registered Model Name.
