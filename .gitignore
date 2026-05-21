@@ -13,3 +13,4 @@ mlruns/
 artifacts/
 csv_files/
 .vscode/
+data/
