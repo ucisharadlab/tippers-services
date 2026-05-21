@@ -46,6 +46,50 @@ def run_for_space(
         yield run
 
 
+def model_name_for_zone(zone_id: str, model_type: str, granularity: str = "local") -> str:
+    """e.g. model_name_for_zone('VAV1.10', 'em', 'local') → 'em_local_VAV1_10'"""
+    if granularity == "global":
+        return f"{model_type}_global"
+    safe = zone_id.replace(".", "_").replace("-", "_")
+    return f"{model_type}_{granularity}_{safe}"
+
+
+def _ensure_experiment(name: str) -> None:
+    """Set active experiment, restoring it first if it was soft-deleted."""
+    client = MlflowClient()
+    exp = client.get_experiment_by_name(name)
+    if exp is not None and exp.lifecycle_stage == "deleted":
+        client.restore_experiment(exp.experiment_id)
+    mlflow.set_experiment(name)
+
+
+def log_and_register_thermal(
+    model: Any,
+    model_name: str,
+    extra_tags: dict | None = None,
+    artifacts: dict[str, dict] | None = None,
+) -> dict:
+    """Log + register a thermal model by string name. Logs any dicts in `artifacts` as JSON."""
+    _ensure_experiment(DEFAULT_EXPERIMENT)
+    tags = {"thermal_model_name": model_name}
+    if extra_tags:
+        tags.update({k: str(v) for k, v in extra_tags.items()})
+    with mlflow.start_run(tags=tags) as run:
+        if artifacts:
+            for artifact_name, artifact_dict in artifacts.items():
+                mlflow.log_dict(artifact_dict, f"{artifact_name}.json")
+        result = mlflow.sklearn.log_model(
+            sk_model=model,
+            artifact_path="model",
+            registered_model_name=model_name,
+        )
+    return {
+        "registered_model_name": model_name,
+        "version": str(result.registered_model_version),
+        "run_id": run.info.run_id,
+    }
+
+
 def log_and_register_sklearn(
     model: Any,
     space_id: int,
