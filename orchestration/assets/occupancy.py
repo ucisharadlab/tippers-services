@@ -1,9 +1,10 @@
 from __future__ import annotations
 from pathlib import Path
- 
+
 from datetime import datetime, timedelta, timezone
- 
+
 import dagster as dg
+import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sqlalchemy import select
@@ -28,12 +29,17 @@ def _load_csv(path: Path) -> pd.DataFrame:
 
 
 def _build_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert OccupancyRow DTOs into the feature DataFrame the model expects."""
     df = df.copy()
-    df["hour"] = df["starttime"].dt.hour
-    df["dayofweek"] = df["starttime"].dt.dayofweek  # 0=Monday
-    df["is_weekend"] = df["dayofweek"].isin([5, 6]).astype(int)
-    return df[["hour", "dayofweek", "is_weekend"]]
+    h = df["starttime"].dt.hour
+    dow = df["starttime"].dt.dayofweek
+    df["hour_sin"] = np.sin(2 * np.pi * h / 24)
+    df["hour_cos"] = np.cos(2 * np.pi * h / 24)
+    df["dow_sin"] = np.sin(2 * np.pi * dow / 7)
+    df["dow_cos"] = np.cos(2 * np.pi * dow / 7)
+    df["month"] = df["starttime"].dt.month
+    df["week_of_year"] = df["starttime"].dt.isocalendar().week.astype(int)
+    df["is_weekend"] = dow.isin([5, 6]).astype(int)
+    return df[["hour_sin", "hour_cos", "dow_sin", "dow_cos", "month", "week_of_year", "is_weekend"]]
 
 
 def _train_for_space(
@@ -59,12 +65,22 @@ def _train_for_space(
     X_train, X_test = X.iloc[:split], X.iloc[split:]
     y_train, y_test = y[:split], y[split:]
  
-    model = XGBRegressor(random_state=42)
+    model = XGBRegressor(
+        objective="reg:quantileerror",
+        quantile_alpha=0.75,
+        n_estimators=400,
+        max_depth=6,
+        learning_rate=0.05,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        min_child_weight=10,
+        random_state=42,
+    )
     model.fit(X_train, y_train)
- 
-    y_pred = model.predict(X_test)
-    rmse = mean_squared_error(y_test, y_pred)
-    mae = mean_absolute_error(y_test, y_pred)
+
+    y_pred = model.predict(X_test).clip(min=0)
+    rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
+    mae = float(mean_absolute_error(y_test, y_pred))
     context.log.info(f"space_id={space_id}: rmse={rmse:.4f} mae={mae:.4f}")
  
     mlflow_result = log_and_register_sklearn(

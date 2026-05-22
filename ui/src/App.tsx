@@ -16,11 +16,11 @@ import type { ThermalBaseParams } from "./api/thermal";
 import type { OptimizerParams } from "./api/optimizer";
 
 function defaultRange(): OccupancyFormValues {
-  const end = new Date();
-  end.setHours(end.getHours() + 24, 0, 0, 0);
-  const start = new Date(end);
-  start.setDate(start.getDate() - 8);
-  return { spaceId: 1, start, end };
+  return {
+    spaceId: 1,
+    start: new Date(2024, 3, 1),   // April 1, 2024
+    end: new Date(2024, 8, 30),    // September 30, 2024
+  };
 }
 
 function paramsKey(p: OccupancyFormValues) {

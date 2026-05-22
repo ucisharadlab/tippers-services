@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import math
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
+import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 from mlflow.exceptions import MlflowException
@@ -121,16 +123,20 @@ def get_occupancy(
             feature_df = pd.DataFrame(
                 [
                     {
-                        "hour": s.hour,
-                        "dayofweek": s.weekday(),
+                        "hour_sin": np.sin(2 * np.pi * s.hour / 24),
+                        "hour_cos": np.cos(2 * np.pi * s.hour / 24),
+                        "dow_sin": np.sin(2 * np.pi * s.weekday() / 7),
+                        "dow_cos": np.cos(2 * np.pi * s.weekday() / 7),
+                        "month": s.month,
+                        "week_of_year": s.isocalendar()[1],
                         "is_weekend": 1 if s.weekday() >= 5 else 0,
                     }
                     for s, _ in future
                 ]
             )
-            predictions = model.predict(feature_df)
+            predictions = model.predict(feature_df).clip(min=0)
             forecast = [
-                ForecastInterval(starttime=s, endtime=e, predicted_occupancy=float(p))
+                ForecastInterval(starttime=s, endtime=e, predicted_occupancy=float(math.ceil(p)))
                 for (s, e), p in zip(future, predictions)
             ]
             model_version = str(version.version)
