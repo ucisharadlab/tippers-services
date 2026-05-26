@@ -27,3 +27,12 @@ export interface PopularTimesResponse {
   // days[0]=Monday … days[6]=Sunday; each has 24 hourly averages (null = no data)
   days: (number | null)[][];
 }
+
+export interface ThermalPrediction {
+  timestamp: string;
+  occupancy_used: number;
+  occupancy_fallback?: boolean;
+  predicted_energy_kwh_per_min: number;
+  etotal_raw?: number;
+  em_raw?: number;
+}
