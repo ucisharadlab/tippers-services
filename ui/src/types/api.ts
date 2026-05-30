@@ -36,3 +36,46 @@ export interface ThermalPrediction {
   etotal_raw?: number;
   em_raw?: number;
 }
+
+export interface OptimizerInterval {
+  timestamp: string;
+  state: "cooling" | "maintaining" | "off";
+  temperature: number;
+  naive_temperature: number;
+  energy_kwh: number;
+  interval_cost_usd: number;
+  tou_price: number;
+  occupancy: number;
+}
+
+export interface OptimizerResult {
+  zone_id: string;
+  solver_status: string;
+  total_optimized_cost_usd: number;
+  total_naive_cost_usd: number;
+  savings_pct: number;
+  interval_minutes: number;
+  intervals: OptimizerInterval[];
+}
+
+export interface OptimizerDayResult {
+  date: string;
+  solver_status: string;
+  total_optimized_cost_usd: number;
+  total_naive_cost_usd: number;
+  savings_pct: number;
+  interval_minutes: number;
+  intervals: OptimizerInterval[];
+}
+
+export interface OptimizerRangeResult {
+  zone_id: string;
+  start_date: string;
+  end_date: string;
+  solver_status: string;
+  total_optimized_cost_usd: number;
+  total_naive_cost_usd: number;
+  savings_pct: number;
+  interval_minutes: number;
+  days: OptimizerDayResult[];
+}
