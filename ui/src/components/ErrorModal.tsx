@@ -42,7 +42,6 @@ export function ErrorModal({ message, spaceId, onClose }: Props) {
     return () => clearInterval(id);
   }, [ingestStatus, spaceId]);
 
-  // Auto-scroll output to bottom as new lines arrive
   useEffect(() => {
     if (outputRef.current) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight;
@@ -59,14 +58,14 @@ export function ErrorModal({ message, spaceId, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white p-6 shadow-lg">
-        <h2 className="mb-2 text-base font-semibold text-slate-900">No model available</h2>
+      <div className="w-full max-w-lg rounded-lg border border-blue-100 bg-white p-6 shadow-lg">
+        <h2 className="mb-2 text-base font-semibold text-blue-900">No model available</h2>
         <p className="mb-4 text-sm text-slate-600">{message}</p>
 
-        <div className="mb-4 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+        <div className="mb-4 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-sm">
           {hasData === null && <span className="text-slate-400">Checking occupancy data…</span>}
           {hasData === true && ingestStatus === "idle" && (
-            <span className="text-green-700">
+            <span className="text-emerald-700">
               Occupancy data found ({rowCount.toLocaleString()} rows).
             </span>
           )}
@@ -75,7 +74,7 @@ export function ErrorModal({ message, spaceId, onClose }: Props) {
               <span className="text-amber-700">No occupancy data for this space.</span>
               <button
                 onClick={handleIngest}
-                className="rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+                className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
               >
                 Input data into occupancy table
               </button>
@@ -85,7 +84,7 @@ export function ErrorModal({ message, spaceId, onClose }: Props) {
             <span className="text-slate-500">Ingesting data… this may take several minutes.</span>
           )}
           {ingestStatus === "done" && (
-            <span className="text-green-700">Data ingested successfully.</span>
+            <span className="text-emerald-700">Data ingested successfully.</span>
           )}
           {ingestStatus === "error" && (
             <span className="text-red-700">Ingestion failed — see output below.</span>
@@ -103,7 +102,7 @@ export function ErrorModal({ message, spaceId, onClose }: Props) {
 
         <button
           onClick={onClose}
-          className="w-full rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
           Dismiss
         </button>

@@ -79,7 +79,7 @@ export function PopularTimesChart({ spaceId }: Props) {
   const hasData = nonNulls.length > 0;
 
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-md border border-blue-100 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-sm font-semibold text-slate-700">Popular Times</h2>
 
       <div className="mb-4 flex gap-1">
@@ -90,7 +90,7 @@ export function PopularTimesChart({ spaceId }: Props) {
             className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
               idx === selectedDay
                 ? "bg-blue-600 text-white"
-                : "text-slate-500 hover:bg-slate-100"
+                : "text-slate-500 hover:bg-blue-50"
             }`}
           >
             {day}

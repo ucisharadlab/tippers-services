@@ -32,14 +32,14 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names, defaultOpen = f
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
         className={`flex items-center gap-1 rounded py-1 pr-2 cursor-pointer text-sm select-none ${
           isSelected
-            ? "bg-slate-900 text-white"
-            : "hover:bg-slate-100 text-slate-700"
+            ? "bg-blue-600 text-white"
+            : "hover:bg-blue-50 text-slate-700"
         }`}
         onClick={() => onSelect(id)}
       >
         <button
           type="button"
-          className={`w-4 text-xs shrink-0 ${isSelected ? "text-white" : "text-slate-400 hover:text-slate-700"}`}
+          className={`w-4 text-xs shrink-0 ${isSelected ? "text-white" : "text-blue-300 hover:text-blue-600"}`}
           onClick={(e) => {
             e.stopPropagation();
             setOpen((o) => !o);
@@ -97,14 +97,14 @@ export function SpaceTree({ selectedId, onSelect }: Props) {
     : null;
 
   return (
-    <div className="w-56 rounded border border-slate-300 bg-white">
-      <div className="border-b border-slate-200 px-2 py-1.5">
+    <div className="w-56 rounded border border-blue-200 bg-white">
+      <div className="border-b border-blue-100 px-2 py-1.5">
         <input
           type="text"
           placeholder="Search name or ID…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-slate-400"
+          className="w-full rounded border border-blue-100 px-2 py-1 text-xs outline-none focus:border-blue-400"
         />
       </div>
       <div className="max-h-60 overflow-y-auto py-1">
