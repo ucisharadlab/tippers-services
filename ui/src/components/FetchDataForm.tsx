@@ -25,29 +25,27 @@ export function FetchDataForm() {
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-md border border-slate-200 bg-white p-4 shadow-sm">
-      <label className="flex flex-col text-sm">
-        <span className="mb-1 font-medium text-slate-700">Space ID</span>
-        <input
-          type="number"
-          value={spaceId}
-          onChange={(e) => { setSpaceId(e.target.value); setStatus("idle"); }}
-          placeholder="e.g. 473"
-          className="w-32 rounded border border-slate-300 px-3 py-2"
-        />
-      </label>
+    <div>
+      <p className="mb-2 text-xs font-medium text-slate-500 uppercase tracking-wide">Export Data</p>
+      <input
+        type="number"
+        value={spaceId}
+        onChange={(e) => { setSpaceId(e.target.value); setStatus("idle"); }}
+        placeholder="Space ID (e.g. 473)"
+        className="mb-2 w-full rounded border border-blue-200 px-2 py-1.5 text-sm"
+      />
       <button
         onClick={handleFetch}
         disabled={!spaceId || status === "loading"}
-        className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+        className="w-full rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
       >
-        {status === "loading" ? "Fetching..." : "Fetch data"}
+        {status === "loading" ? "Fetching…" : "Fetch data"}
       </button>
       {status === "success" && (
-        <span className="text-sm text-green-700">{message}</span>
+        <p className="mt-2 text-xs text-emerald-700 break-all">{message}</p>
       )}
       {status === "error" && (
-        <span className="text-sm text-red-700">{message}</span>
+        <p className="mt-2 text-xs text-red-700">{message}</p>
       )}
     </div>
   );

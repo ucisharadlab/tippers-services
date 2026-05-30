@@ -50,7 +50,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-md border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-md border border-blue-100 bg-white p-4 shadow-sm"
     >
       <h3 className="mb-4 text-sm font-semibold text-slate-700">Thermal Energy Parameters</h3>
       <div className="flex flex-wrap items-end gap-4">
@@ -61,7 +61,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             value={zoneId}
             onChange={(e) => setZoneId(e.target.value)}
             placeholder="e.g. VAV-101"
-            className="w-36 rounded border border-slate-300 px-3 py-2"
+            className="w-36 rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -73,7 +73,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             onChange={(e) =>
               setGranularity(e.target.value as "local" | "global" | "intermediate")
             }
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-blue-200 px-3 py-2"
           >
             <option value="local">local</option>
             <option value="global">global</option>
@@ -87,7 +87,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={zoneTemp}
             onChange={(e) => setZoneTemp(e.target.value)}
-            className="w-28 rounded border border-slate-300 px-3 py-2"
+            className="w-28 rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -98,7 +98,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={clgSetpoint}
             onChange={(e) => setClgSetpoint(e.target.value)}
-            className="w-28 rounded border border-slate-300 px-3 py-2"
+            className="w-28 rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -110,7 +110,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             value={htgSetpoint}
             onChange={(e) => setHtgSetpoint(e.target.value)}
             placeholder="optional"
-            className="w-28 rounded border border-slate-300 px-3 py-2"
+            className="w-28 rounded border border-blue-200 px-3 py-2"
           />
         </label>
 
@@ -120,7 +120,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={ambientTemp}
             onChange={(e) => setAmbientTemp(e.target.value)}
-            className="w-28 rounded border border-slate-300 px-3 py-2"
+            className="w-28 rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -132,7 +132,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             value={intervalMinutes}
             onChange={(e) => setIntervalMinutes(e.target.value)}
             min={1}
-            className="w-24 rounded border border-slate-300 px-3 py-2"
+            className="w-24 rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -143,7 +143,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -154,7 +154,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="datetime-local"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -162,7 +162,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Load"}
         </button>

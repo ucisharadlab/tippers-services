@@ -46,7 +46,7 @@ export function ThermalChart({ em, etotal, ec }: Props) {
   }, [em, etotal, ec]);
 
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-md border border-blue-100 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-medium text-slate-700">Energy Usage Over Time</h2>
       <div className="h-96 w-full">
         <ResponsiveContainer width="100%" height="100%">

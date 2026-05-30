@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { SpaceTree } from "./SpaceTree";
 import { ModelVersionSelector } from "./ModelVersionSelector";
 
 export interface OccupancyFormValues {
@@ -9,7 +8,7 @@ export interface OccupancyFormValues {
 }
 
 interface Props {
-  initial: OccupancyFormValues;
+  spaceId: number;
   onSubmit: (values: OccupancyFormValues) => void;
   isLoading: boolean;
 }
@@ -19,10 +18,9 @@ function toLocalInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
-  const [spaceId, setSpaceId] = useState<number>(initial.spaceId);
-  const [start, setStart] = useState<string>(toLocalInput(initial.start));
-  const [end, setEnd] = useState<string>(toLocalInput(initial.end));
+export function OccupancyForm({ spaceId, onSubmit, isLoading }: Props) {
+  const [start, setStart] = useState<string>(toLocalInput(new Date(2024, 3, 1)));
+  const [end, setEnd] = useState<string>(toLocalInput(new Date(2024, 8, 30)));
   const [modelSidebarOpen, setModelSidebarOpen] = useState(false);
 
   function handleSubmit(e: FormEvent) {
@@ -34,19 +32,15 @@ export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
     <>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-wrap items-end gap-4 rounded-md border border-slate-200 bg-white p-4 shadow-sm"
+        className="flex flex-wrap items-end gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm"
       >
-        <div className="flex flex-col text-sm">
-          <span className="mb-1 font-medium text-slate-700">Space ID</span>
-          <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
-        </div>
         <label className="flex flex-col text-sm">
           <span className="mb-1 font-medium text-slate-700">Start</span>
           <input
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -56,21 +50,21 @@ export function OccupancyForm({ initial, onSubmit, isLoading }: Props) {
             type="datetime-local"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
         <button
           type="submit"
           disabled={isLoading}
-          className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Load"}
         </button>
         <button
           type="button"
           onClick={() => setModelSidebarOpen(true)}
-          className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
         >
           Model
         </button>

@@ -45,12 +45,12 @@ export function ModelVersionSelector({ spaceId, isOpen, onClose }: Props) {
         }`}
       >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-            <h2 className="text-base font-semibold text-slate-900">Model Versions</h2>
+          <div className="flex items-center justify-between border-b border-blue-100 px-5 py-4">
+            <h2 className="text-base font-semibold text-blue-900">Model Versions</h2>
             <button
               type="button"
               onClick={onClose}
-              className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="rounded p-1 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
             >
               ✕
             </button>
@@ -62,7 +62,7 @@ export function ModelVersionSelector({ spaceId, isOpen, onClose }: Props) {
             ) : (
               <div className="space-y-4">
                 {currentProduction && (
-                  <div className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                  <div className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
                     Current production: <span className="font-semibold">v{currentProduction}</span>
                   </div>
                 )}
@@ -77,20 +77,20 @@ export function ModelVersionSelector({ spaceId, isOpen, onClose }: Props) {
                         onClick={() => setSelectedVersion(v.version)}
                         className={`w-full rounded-md border px-4 py-3 text-left text-sm transition-colors ${
                           isSelected
-                            ? "border-slate-900 bg-slate-900 text-white"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-blue-100 bg-white text-slate-700 hover:border-blue-200 hover:bg-blue-50"
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-medium">v{v.version}</span>
                           {v.is_production && (
-                            <span className={`text-xs font-medium ${isSelected ? "text-slate-300" : "text-green-600"}`}>
+                            <span className={`text-xs font-medium ${isSelected ? "text-blue-200" : "text-emerald-600"}`}>
                               production
                             </span>
                           )}
                         </div>
                         {(v.rmse != null || v.mae != null) && (
-                          <div className={`mt-1 text-xs ${isSelected ? "text-slate-300" : "text-slate-400"}`}>
+                          <div className={`mt-1 text-xs ${isSelected ? "text-blue-200" : "text-slate-400"}`}>
                             {v.rmse != null && `RMSE: ${v.rmse.toFixed(4)}`}
                             {v.rmse != null && v.mae != null && "  ·  "}
                             {v.mae != null && `MAE: ${v.mae.toFixed(4)}`}
@@ -105,7 +105,7 @@ export function ModelVersionSelector({ spaceId, isOpen, onClose }: Props) {
                   type="button"
                   disabled={isPending || effectiveSelected === currentProduction}
                   onClick={() => effectiveSelected && mutate(effectiveSelected)}
-                  className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+                  className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   {isPending ? "Setting..." : "Set as Production"}
                 </button>

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import math
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
+import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 from mlflow.exceptions import MlflowException
@@ -115,40 +117,53 @@ def get_occupancy(
     forecast: list[ForecastInterval] = []
     model_version: str | None = None
     forecast_error: str | None = None
-    if future:
+
+    # Always load the model so we can report missing-model errors even when there
+    # are no future slots to predict (e.g. space has no data, last_observed = now).
+    loaded_model = None
+    try:
+        loaded_model, version = occupancy_resolver.load(space_id)
+        model_version = str(version.version)
+    except MlflowException as e:
+        error_code = getattr(e, "error_code", "")
+        if error_code in ("RESOURCE_DOES_NOT_EXIST", "INVALID_PARAMETER_VALUE"):
+            forecast_error = (
+                f"No production model for space {space_id} — "
+                "train one via Dagster and assign the @production alias in MLflow."
+            )
+        else:
+            log.exception("MLflow error loading model for space %s", space_id)
+            forecast_error = "Model service unavailable — forecast could not be generated."
+    except (OSError, FileNotFoundError):
+        forecast_error = (
+            f"Production model artifacts are missing for space {space_id}. "
+            "Use the Model sidebar to select a different version."
+        )
+    except Exception as exc:
+        log.exception("Unexpected error loading model for space %s", space_id)
+        forecast_error = f"Forecast could not be generated — {type(exc).__name__}: {exc}"
+
+    if loaded_model is not None and future:
         try:
-            model, version = occupancy_resolver.load(space_id)
             feature_df = pd.DataFrame(
                 [
                     {
-                        "hour": s.hour,
-                        "dayofweek": s.weekday(),
+                        "hour_sin": np.sin(2 * np.pi * s.hour / 24),
+                        "hour_cos": np.cos(2 * np.pi * s.hour / 24),
+                        "dow_sin": np.sin(2 * np.pi * s.weekday() / 7),
+                        "dow_cos": np.cos(2 * np.pi * s.weekday() / 7),
+                        "month": s.month,
+                        "week_of_year": s.isocalendar()[1],
                         "is_weekend": 1 if s.weekday() >= 5 else 0,
                     }
                     for s, _ in future
                 ]
             )
-            predictions = model.predict(feature_df)
+            predictions = loaded_model.predict(feature_df).clip(min=0)
             forecast = [
-                ForecastInterval(starttime=s, endtime=e, predicted_occupancy=float(p))
+                ForecastInterval(starttime=s, endtime=e, predicted_occupancy=float(math.ceil(p)))
                 for (s, e), p in zip(future, predictions)
             ]
-            model_version = str(version.version)
-        except MlflowException as e:
-            error_code = getattr(e, "error_code", "")
-            if error_code in ("RESOURCE_DOES_NOT_EXIST", "INVALID_PARAMETER_VALUE"):
-                forecast_error = (
-                    f"No production model for space {space_id} — "
-                    "train one via Dagster and assign the @production alias in MLflow."
-                )
-            else:
-                log.exception("MLflow error loading model for space %s", space_id)
-                forecast_error = "Model service unavailable — forecast could not be generated."
-        except (OSError, FileNotFoundError):
-            forecast_error = (
-                f"Production model artifacts are missing for space {space_id}. "
-                "Use the Model sidebar to select a different version."
-            )
         except Exception as exc:
             log.exception("Prediction error for space %s", space_id)
             forecast_error = f"Forecast could not be generated — {type(exc).__name__}: {exc}"

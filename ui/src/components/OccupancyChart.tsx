@@ -42,7 +42,7 @@ export function OccupancyChart({ data }: Props) {
   }, [data]);
 
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-md border border-blue-100 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-medium text-slate-700">
         Occupancy — history vs. forecast
       </h2>

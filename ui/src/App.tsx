@@ -5,6 +5,7 @@ import { OccupancyChart } from "./components/OccupancyChart";
 import { MetadataStrip } from "./components/MetadataStrip";
 import { ErrorModal } from "./components/ErrorModal";
 import { PopularTimesChart } from "./components/PopularTimesChart";
+import { SpaceTree } from "./components/SpaceTree";
 import { ThermalForm } from "./components/ThermalForm";
 import { ThermalChart } from "./components/ThermalChart";
 import { OptimizerForm } from "./components/OptimizerForm";
@@ -15,29 +16,27 @@ import { useOptimizer } from "./hooks/useOptimizer";
 import type { ThermalBaseParams } from "./api/thermal";
 import type { OptimizerParams } from "./api/optimizer";
 
-function defaultRange(): OccupancyFormValues {
-  const end = new Date();
-  end.setHours(end.getHours() + 24, 0, 0, 0);
-  const start = new Date(end);
-  start.setDate(start.getDate() - 8);
-  return { spaceId: 1, start, end };
-}
-
 function paramsKey(p: OccupancyFormValues) {
   return `${p.spaceId}-${p.start.toISOString()}-${p.end.toISOString()}`;
 }
 
+type Tab = "occupancy" | "thermal" | "optimizer";
+
 export default function App() {
-  const [params, setParams] = useState<OccupancyFormValues>(defaultRange);
+  const [spaceId, setSpaceId] = useState(1);
+  const [tab, setTab] = useState<Tab>("occupancy");
+
+  // Occupancy
+  const [params, setParams] = useState<OccupancyFormValues | null>(null);
   const [dismissedKey, setDismissedKey] = useState<string | null>(null);
   const { data, isLoading, isFetching, error } = useOccupancy(
-    params.spaceId,
-    params.start,
-    params.end,
+    params?.spaceId ?? null,
+    params?.start ?? new Date(2024, 3, 1),
+    params?.end ?? new Date(2024, 8, 30),
   );
 
+  // Thermal
   const [thermalParams, setThermalParams] = useState<ThermalBaseParams | null>(null);
-  const [optimizerParams, setOptimizerParams] = useState<OptimizerParams | null>(null);
   const {
     em: thermalEm,
     etotal: thermalEtotal,
@@ -47,6 +46,8 @@ export default function App() {
     error: thermalError,
   } = useAllThermalRanges(thermalParams);
 
+  // Optimizer
+  const [optimizerParams, setOptimizerParams] = useState<OptimizerParams | null>(null);
   const {
     data: optimizerData,
     isLoading: optimizerLoading,
@@ -55,122 +56,158 @@ export default function App() {
   } = useOptimizer(optimizerParams);
 
   const forecastError = data?.forecast_error ?? null;
-  const showModal = !!forecastError && dismissedKey !== paramsKey(params);
+  const showModal = !!forecastError && params !== null && dismissedKey !== paramsKey(params);
+
+  const tabClass = (t: Tab) =>
+    `rounded-md px-5 py-2 text-sm font-medium transition-colors ${
+      tab === t
+        ? "bg-blue-600 text-white shadow-sm"
+        : "border border-blue-100 bg-white text-slate-600 hover:bg-blue-50"
+    }`;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">DataWhisk</h1>
-        <p className="text-sm text-slate-600">
-          Occupancy history and forecast viewer.
-        </p>
-      </header>
-
-      <div className="mb-6">
-        <OccupancyForm
-          initial={params}
-          onSubmit={setParams}
-          isLoading={isLoading || isFetching}
-        />
-      </div>
-
-      <div className="mb-6">
-        <FetchDataForm />
-      </div>
-
-      {error && (
-        <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
-          {(error as Error).message}
-        </div>
-      )}
-
-      {showModal && (
-        <ErrorModal
-          message={forecastError!}
-          spaceId={params.spaceId}
-          onClose={() => setDismissedKey(paramsKey(params))}
-        />
-      )}
-
-      {data && (
-        <div className="space-y-6">
-          <MetadataStrip data={data} />
-          <OccupancyChart data={data} />
-          <PopularTimesChart spaceId={data.space_id} />
-        </div>
-      )}
-
-      {!data && !error && !isLoading && (
-        <div className="rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-          Select a space and date range, then click Load.
-        </div>
-      )}
-
-      <section className="mt-10">
-        <header className="mb-4">
-          <h2 className="text-xl font-semibold text-slate-900">Thermal Energy</h2>
-          <p className="text-sm text-slate-600">Predicted HVAC energy usage over a time range.</p>
-        </header>
-
-        <div className="mb-6">
-          <ThermalForm
-            onSubmit={setThermalParams}
-            isLoading={thermalLoading || thermalFetching}
-          />
+    <div className="flex min-h-screen">
+      {/* Left sidebar */}
+      <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
+        <div className="border-b border-blue-100 px-4 py-4">
+          <h1 className="text-lg font-semibold text-blue-900">DataWhisk</h1>
+          <p className="text-xs text-slate-500">Occupancy &amp; forecast viewer</p>
         </div>
 
-        {thermalError && (
-          <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
-            {(thermalError as Error).message}
-          </div>
-        )}
-
-        {(thermalEm.data || thermalEtotal.data || thermalEc.data) && (
-          <ThermalChart
-            em={thermalEm.data}
-            etotal={thermalEtotal.data}
-            ec={thermalEc.data}
-          />
-        )}
-
-        {!thermalEm.data && !thermalEtotal.data && !thermalEc.data && !thermalError && !thermalLoading && (
-          <div className="rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-            Fill in the parameters above, then click Load.
-          </div>
-        )}
-      </section>
-
-      <section className="mt-10">
-        <header className="mb-4">
-          <h2 className="text-xl font-semibold text-slate-900">HVAC Schedule Optimizer</h2>
-          <p className="text-sm text-slate-600">
-            Optimal 24-hour HVAC schedule minimizing energy cost using time-of-use pricing.
+        <div className="flex-1 overflow-y-auto p-3">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Space</p>
+          <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
+          <p className="mt-2 text-xs text-slate-500">
+            Selected: <span className="font-medium text-blue-700">Space {spaceId}</span>
           </p>
-        </header>
-
-        <div className="mb-6">
-          <OptimizerForm
-            onSubmit={setOptimizerParams}
-            isLoading={optimizerLoading || optimizerFetching}
-          />
         </div>
 
-        {optimizerError && (
-          <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
-            {(optimizerError as Error).message}
-          </div>
-        )}
+        <div className="border-t border-blue-100 p-3">
+          <FetchDataForm />
+        </div>
+      </aside>
 
-        {optimizerData && optimizerParams && (
-          <OptimizerChart data={optimizerData} clgSetpoint={optimizerParams.clgSetpoint} />
-        )}
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto bg-blue-50">
+        <div className="mx-auto max-w-4xl px-6 py-8">
 
-        {!optimizerData && !optimizerError && !optimizerLoading && (
-          <div className="rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-            Fill in the parameters above, then click Optimize.
+          {/* Tab bar */}
+          <div className="mb-6 flex justify-center gap-2">
+            <button onClick={() => setTab("occupancy")} className={tabClass("occupancy")}>
+              Occupancy
+            </button>
+            <button onClick={() => setTab("thermal")} className={tabClass("thermal")}>
+              Thermal
+            </button>
+            <button onClick={() => setTab("optimizer")} className={tabClass("optimizer")}>
+              Optimizer
+            </button>
           </div>
-        )}
-      </section>
+
+          {/* Global overlay */}
+          {showModal && (
+            <ErrorModal
+              message={forecastError!}
+              spaceId={params!.spaceId}
+              onClose={() => setDismissedKey(paramsKey(params!))}
+            />
+          )}
+
+          {/* ── Occupancy tab ── */}
+          {tab === "occupancy" && (
+            <>
+              <div className="mb-6">
+                <OccupancyForm
+                  spaceId={spaceId}
+                  onSubmit={setParams}
+                  isLoading={isLoading || isFetching}
+                />
+              </div>
+
+              {error && (
+                <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                  {(error as Error).message}
+                </div>
+              )}
+
+              {data && (
+                <div className="space-y-6">
+                  <MetadataStrip data={data} />
+                  <OccupancyChart data={data} />
+                  <PopularTimesChart spaceId={data.space_id} />
+                </div>
+              )}
+
+              {!data && !error && !isLoading && (
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                  Select a space and date range, then click Load.
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── Thermal tab ── */}
+          {tab === "thermal" && (
+            <>
+              <div className="mb-6">
+                <ThermalForm
+                  onSubmit={setThermalParams}
+                  isLoading={thermalLoading || thermalFetching}
+                />
+              </div>
+
+              {thermalError && (
+                <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                  {(thermalError as Error).message}
+                </div>
+              )}
+
+              {(thermalEm.data || thermalEtotal.data || thermalEc.data) && (
+                <ThermalChart
+                  em={thermalEm.data}
+                  etotal={thermalEtotal.data}
+                  ec={thermalEc.data}
+                />
+              )}
+
+              {!thermalEm.data && !thermalEtotal.data && !thermalEc.data && !thermalError && !thermalLoading && (
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                  Fill in the parameters above, then click Load.
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── Optimizer tab ── */}
+          {tab === "optimizer" && (
+            <>
+              <div className="mb-6">
+                <OptimizerForm
+                  onSubmit={setOptimizerParams}
+                  isLoading={optimizerLoading || optimizerFetching}
+                />
+              </div>
+
+              {optimizerError && (
+                <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                  {(optimizerError as Error).message}
+                </div>
+              )}
+
+              {optimizerData && optimizerParams && (
+                <OptimizerChart data={optimizerData} clgSetpoint={optimizerParams.clgSetpoint} />
+              )}
+
+              {!optimizerData && !optimizerError && !optimizerLoading && (
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                  Fill in the parameters above, then click Optimize.
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
+      </main>
     </div>
   );
 }
