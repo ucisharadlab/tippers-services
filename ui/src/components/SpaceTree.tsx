@@ -97,7 +97,7 @@ export function SpaceTree({ selectedId, onSelect }: Props) {
     : null;
 
   return (
-    <div className="w-56 rounded border border-blue-200 bg-white">
+    <div className="rounded border border-blue-200 bg-white">
       <div className="border-b border-blue-100 px-2 py-1.5">
         <input
           type="text"

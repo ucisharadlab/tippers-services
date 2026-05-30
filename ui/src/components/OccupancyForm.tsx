@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { SpaceTree } from "./SpaceTree";
 import { ModelVersionSelector } from "./ModelVersionSelector";
 
 export interface OccupancyFormValues {
@@ -9,6 +8,7 @@ export interface OccupancyFormValues {
 }
 
 interface Props {
+  spaceId: number;
   onSubmit: (values: OccupancyFormValues) => void;
   isLoading: boolean;
 }
@@ -18,8 +18,7 @@ function toLocalInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export function OccupancyForm({ onSubmit, isLoading }: Props) {
-  const [spaceId, setSpaceId] = useState<number>(1);
+export function OccupancyForm({ spaceId, onSubmit, isLoading }: Props) {
   const [start, setStart] = useState<string>(toLocalInput(new Date(2024, 3, 1)));
   const [end, setEnd] = useState<string>(toLocalInput(new Date(2024, 8, 30)));
   const [modelSidebarOpen, setModelSidebarOpen] = useState(false);
@@ -35,10 +34,6 @@ export function OccupancyForm({ onSubmit, isLoading }: Props) {
         onSubmit={handleSubmit}
         className="flex flex-wrap items-end gap-4 rounded-md border border-blue-100 bg-white p-4 shadow-sm"
       >
-        <div className="flex flex-col text-sm">
-          <span className="mb-1 font-medium text-slate-700">Space ID</span>
-          <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
-        </div>
         <label className="flex flex-col text-sm">
           <span className="mb-1 font-medium text-slate-700">Start</span>
           <input
