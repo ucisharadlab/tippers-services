@@ -7,9 +7,13 @@ import { ErrorModal } from "./components/ErrorModal";
 import { PopularTimesChart } from "./components/PopularTimesChart";
 import { ThermalForm } from "./components/ThermalForm";
 import { ThermalChart } from "./components/ThermalChart";
+import { OptimizerForm } from "./components/OptimizerForm";
+import { OptimizerChart } from "./components/OptimizerChart";
 import { useOccupancy } from "./hooks/useOccupancy";
 import { useAllThermalRanges } from "./hooks/useThermal";
+import { useOptimizer } from "./hooks/useOptimizer";
 import type { ThermalBaseParams } from "./api/thermal";
+import type { OptimizerParams } from "./api/optimizer";
 
 function defaultRange(): OccupancyFormValues {
   const end = new Date();
@@ -33,6 +37,7 @@ export default function App() {
   );
 
   const [thermalParams, setThermalParams] = useState<ThermalBaseParams | null>(null);
+  const [optimizerParams, setOptimizerParams] = useState<OptimizerParams | null>(null);
   const {
     em: thermalEm,
     etotal: thermalEtotal,
@@ -41,6 +46,13 @@ export default function App() {
     isFetching: thermalFetching,
     error: thermalError,
   } = useAllThermalRanges(thermalParams);
+
+  const {
+    data: optimizerData,
+    isLoading: optimizerLoading,
+    isFetching: optimizerFetching,
+    error: optimizerError,
+  } = useOptimizer(optimizerParams);
 
   const forecastError = data?.forecast_error ?? null;
   const showModal = !!forecastError && dismissedKey !== paramsKey(params);
@@ -124,6 +136,38 @@ export default function App() {
         {!thermalEm.data && !thermalEtotal.data && !thermalEc.data && !thermalError && !thermalLoading && (
           <div className="rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
             Fill in the parameters above, then click Load.
+          </div>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <header className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-900">HVAC Schedule Optimizer</h2>
+          <p className="text-sm text-slate-600">
+            Optimal 24-hour HVAC schedule minimizing energy cost using time-of-use pricing.
+          </p>
+        </header>
+
+        <div className="mb-6">
+          <OptimizerForm
+            onSubmit={setOptimizerParams}
+            isLoading={optimizerLoading || optimizerFetching}
+          />
+        </div>
+
+        {optimizerError && (
+          <div className="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+            {(optimizerError as Error).message}
+          </div>
+        )}
+
+        {optimizerData && optimizerParams && (
+          <OptimizerChart data={optimizerData} clgSetpoint={optimizerParams.clgSetpoint} />
+        )}
+
+        {!optimizerData && !optimizerError && !optimizerLoading && (
+          <div className="rounded-md border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
+            Fill in the parameters above, then click Optimize.
           </div>
         )}
       </section>
