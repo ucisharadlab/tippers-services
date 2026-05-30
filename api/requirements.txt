@@ -10,3 +10,4 @@ sshtunnel==0.4.0
 requests>=2.31
 pydantic==2.13.0
 dagster-graphql==1.13.0
+pulp==2.8.0
