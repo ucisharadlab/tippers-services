@@ -4,20 +4,9 @@ from fastapi import APIRouter
 from sqlalchemy import select
 
 from api.deps import SessionDep
-from datawhisk_shared.orm import Sensor, Space
+from datawhisk_shared.orm import Space
 
 router = APIRouter(prefix="/services/spaces", tags=["spaces"])
-
-
-@router.get("/sensor-names", response_model=dict[int, str])
-def get_sensor_names(session: SessionDep) -> dict[int, str]:
-    rows = session.execute(
-        select(Sensor.space_id, Sensor.sensor_name)
-        .where(Sensor.space_id.isnot(None))
-        .distinct(Sensor.space_id)
-        .order_by(Sensor.space_id, Sensor.sensor_id)
-    ).all()
-    return {space_id: name for space_id, name in rows}
 
 
 @router.get("/space-names", response_model=dict[int, str])
