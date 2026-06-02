@@ -67,8 +67,8 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left sidebar */}
-      <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
+      {/* Left sidebar — occupancy tab only */}
+      {tab === "occupancy" && <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
         <div className="border-b border-blue-100 px-4 py-4">
           <h1 className="text-lg font-semibold text-blue-900">DataWhisk</h1>
           <p className="text-xs text-slate-500">Occupancy &amp; forecast viewer</p>
@@ -85,7 +85,7 @@ export default function App() {
         <div className="border-t border-blue-100 p-3">
           <FetchDataForm />
         </div>
-      </aside>
+      </aside>}
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto bg-blue-50">

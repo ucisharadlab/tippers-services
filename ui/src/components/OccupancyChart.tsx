@@ -60,7 +60,7 @@ export function OccupancyChart({ data }: Props) {
               stroke="#64748b"
               fontSize={12}
             />
-            <YAxis stroke="#64748b" fontSize={12} allowDecimals={false} />
+            <YAxis stroke="#64748b" fontSize={12} allowDecimals={false} domain={[0, 16]} />
             <Tooltip
               labelFormatter={(t) => format(new Date(t as number), "MMM d, yyyy h:mm a")}
               formatter={(value: number, name) => [

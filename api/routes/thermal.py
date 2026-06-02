@@ -10,6 +10,9 @@ import mlflow
 import mlflow.pyfunc
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import text
+
+from api.deps import SessionDep
 from mlflow.exceptions import MlflowException
 
 from api.mlflow_utils import ModelResolver, model_name_for_zone
@@ -201,22 +204,12 @@ def _resolve_model_name(zone_id: str, model_type: str, granularity: str) -> tupl
 
 
 @router.get("/zones", response_model=list[str])
-def list_zones() -> list[str]:
-    """List zone IDs that have a @production alias for em, etotal, or ec."""
-    from mlflow.tracking import MlflowClient
-    client = MlflowClient()
-    zones: set[str] = set()
-    for model_type in ("em", "etotal"):
-        for rm in client.search_registered_models(filter_string=f"name LIKE '{model_type}_local_%'"):
-            try:
-                client.get_model_version_by_alias(rm.name, "production")
-            except MlflowException:
-                continue
-            prefix = f"{model_type}_local_"
-            safe_zone = rm.name[len(prefix):]
-            zone_id = safe_zone.replace("_", ".", 1) if safe_zone.count("_") >= 1 else safe_zone
-            zones.add(zone_id)
-    return sorted(zones)
+def list_zones(session: SessionDep) -> list[str]:
+    """Return distinct VAV names from zone_vav_mapping, sorted alphabetically."""
+    rows = session.execute(
+        text("SELECT DISTINCT vav_name FROM zone_vav_mapping ORDER BY vav_name")
+    ).fetchall()
+    return [row[0] for row in rows]
 
 
 @router.get("/{zone_id}/coefficients")
