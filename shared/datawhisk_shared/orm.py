@@ -57,6 +57,14 @@ class Sensor(Base):
     space_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
+class ZoneVavMapping(Base):
+    __tablename__ = "zone_vav_mapping"
+
+    wifi_ap: Mapped[str] = mapped_column(Text, primary_key=True)
+    space_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    vav_name: Mapped[str] = mapped_column(Text, nullable=False)
+
+
 class ModelSpaceMapping(Base):
     """DataWhisk-owned state: which model (MLflow URI or Dagster asset key) is
     currently associated with each space, plus the last Dagster run that
