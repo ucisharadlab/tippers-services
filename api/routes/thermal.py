@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import json
 import logging
+import math
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -11,16 +11,16 @@ import mlflow.pyfunc
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 from mlflow.exceptions import MlflowException
+from sqlalchemy import select
 
+from api.deps import _sessionmaker as _get_sessionmaker
 from api.mlflow_utils import ModelResolver, model_name_for_zone
+from datawhisk_shared.orm import ZoneVavMapping
 
 log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/services/thermal", tags=["thermal"])
 
-NEIGHBORS_PATH    = Path(__file__).resolve().parents[2] / "data/zones_mapping/neighbors.json"
-AP_TO_VAV_PATH    = Path(__file__).resolve().parents[2] / "data/zones_mapping/ap_to_vav.csv"
-AP_OCCUPANCY_PATH = Path(__file__).resolve().parents[2] / "data/occupancy/cleaned_ap_occupancy.csv"
 COEFFICIENTS_PATH = Path(__file__).resolve().parents[2] / "data/thermal/zone_thermal_coefficients.csv"
 
 _EM_ZONE_FEATURES = [
@@ -44,62 +44,25 @@ _ETOTAL_ZONE_FEATURES = [
 
 
 def _build_zone_to_sensoria_id() -> dict[str, int]:
-    with NEIGHBORS_PATH.open() as f:
-        entries = json.load(f)
-    zone_to_hvac: dict[str, int] = {
-        e["description"]: e["id"]
-        for e in entries
-        if str(e.get("description", "")).startswith("VAV")
-    }
-
-    ap_df = pd.read_csv(AP_TO_VAV_PATH)
-    hvac_to_aps: dict[int, list[str]] = {}
-    for _, row in ap_df.iterrows():
-        ap = row["wifi_ap"]
-        for sid_str in str(row["space_id"]).split(","):
-            try:
-                hvac_id = int(sid_str.strip())
-                hvac_to_aps.setdefault(hvac_id, []).append(ap)
-            except ValueError:
-                pass
-
-    occ_df = pd.read_csv(AP_OCCUPANCY_PATH, usecols=["space_name", "spaceid"])
-    ap_to_sensoria: dict[str, int] = (
-        occ_df.dropna(subset=["space_name", "spaceid"])
-        .drop_duplicates("space_name")
-        .set_index("space_name")["spaceid"]
-        .astype(int)
-        .to_dict()
-    )
-
+    with _get_sessionmaker()() as session:
+        rows = session.execute(
+            select(ZoneVavMapping.vav_name, ZoneVavMapping.space_id)
+        ).all()
     zone_to_sensoria: dict[str, int] = {}
-    for zone, hvac_id in zone_to_hvac.items():
-        for ap in hvac_to_aps.get(hvac_id, []):
-            if ap in ap_to_sensoria:
-                zone_to_sensoria[zone] = ap_to_sensoria[ap]
-                break
+    for vav_name, space_id in rows:
+        zone_to_sensoria.setdefault(vav_name, space_id)
     return zone_to_sensoria
 
 
 def _build_zone_to_ap() -> dict[str, list[str]]:
-    with NEIGHBORS_PATH.open() as f:
-        entries = json.load(f)
-    zone_to_hvac: dict[str, int] = {
-        e["description"]: e["id"]
-        for e in entries
-        if str(e.get("description", "")).startswith("VAV")
-    }
-    ap_df = pd.read_csv(AP_TO_VAV_PATH)
-    hvac_to_aps: dict[int, list[str]] = {}
-    for _, row in ap_df.iterrows():
-        ap = row["wifi_ap"]
-        for sid_str in str(row["space_id"]).split(","):
-            try:
-                hvac_id = int(sid_str.strip())
-                hvac_to_aps.setdefault(hvac_id, []).append(ap)
-            except ValueError:
-                pass
-    return {zone: hvac_to_aps.get(hvac_id, []) for zone, hvac_id in zone_to_hvac.items()}
+    with _get_sessionmaker()() as session:
+        rows = session.execute(
+            select(ZoneVavMapping.vav_name, ZoneVavMapping.wifi_ap)
+        ).all()
+    zone_to_aps: dict[str, list[str]] = {}
+    for vav_name, wifi_ap in rows:
+        zone_to_aps.setdefault(vav_name, []).append(wifi_ap)
+    return zone_to_aps
 
 
 _ZONE_TO_SENSORIA_ID: dict[str, int] | None = None
@@ -142,9 +105,13 @@ def _get_occupancy(zone_id: str, at: datetime) -> tuple[float, int | None, bool]
     try:
         model, _ = _occ_resolver.load(sensoria_id)
         feat = pd.DataFrame([{
-            "hour": at.hour,
-            "dayofweek": at.weekday(),
-            "is_weekend": 1 if at.weekday() >= 5 else 0,
+            "hour_sin":     math.sin(2 * math.pi * at.hour / 24),
+            "hour_cos":     math.cos(2 * math.pi * at.hour / 24),
+            "dow_sin":      math.sin(2 * math.pi * at.weekday() / 7),
+            "dow_cos":      math.cos(2 * math.pi * at.weekday() / 7),
+            "month":        at.month,
+            "week_of_year": at.isocalendar().week,
+            "is_weekend":   1 if at.weekday() >= 5 else 0,
         }])
         occ = float(model.predict(feat)[0])
         return occ, sensoria_id, False
@@ -272,7 +239,7 @@ def predict_thermal(
 
         em_pred     = float(em_model.predict(em_feats)[0])
         etotal_pred = float(etotal_model.predict(etotal_feats)[0])
-        ec_pred     = etotal_pred - em_pred
+        ec_pred     = max(0.0, etotal_pred - em_pred)
 
         resp = {**response_base,
                 "predicted_energy_kwh_per_min": ec_pred,
@@ -359,7 +326,7 @@ def predict_thermal_range(
             eff_htg = htg_setpoint if htg_setpoint is not None else clg_setpoint - 4.0
             em_pred = float(em_model.predict(_em_features(zone_temp, clg_setpoint, eff_htg, occupancy, ambient_temp, ts))[0])
             etotal_pred = float(etotal_model.predict(_etotal_features(zone_temp, clg_setpoint, occupancy, ambient_temp, ts))[0])
-            entry["predicted_energy_kwh_per_min"] = etotal_pred - em_pred
+            entry["predicted_energy_kwh_per_min"] = max(0.0, etotal_pred - em_pred)
             entry["etotal_raw"] = etotal_pred
             entry["em_raw"] = em_pred
         elif model_type == "em":
