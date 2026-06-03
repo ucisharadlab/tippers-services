@@ -30,7 +30,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names, defaultOpen = f
     <div>
       <div
         style={{ paddingLeft: `${depth * 16 + 4}px` }}
-        className={`flex items-center gap-1 rounded py-1 pr-2 cursor-pointer text-sm select-none ${
+        className={`flex items-center gap-1 rounded py-1 pr-2 cursor-pointer text-base select-none ${
           isSelected
             ? "bg-blue-600 text-white"
             : "hover:bg-blue-50 text-slate-700"
@@ -39,7 +39,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names, defaultOpen = f
       >
         <button
           type="button"
-          className={`w-4 text-xs shrink-0 ${isSelected ? "text-white" : "text-blue-300 hover:text-blue-600"}`}
+          className={`w-4 text-sm shrink-0 ${isSelected ? "text-white" : "text-blue-300 hover:text-blue-600"}`}
           onClick={(e) => {
             e.stopPropagation();
             setOpen((o) => !o);
@@ -48,7 +48,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names, defaultOpen = f
           {open ? "▼" : "▶"}
         </button>
         <span>{label}</span>
-        {isFetching && <span className="ml-1 text-xs opacity-50">…</span>}
+        {isFetching && <span className="ml-1 text-sm opacity-50">…</span>}
       </div>
       {open && children?.map((childId) => (
         <SpaceTreeNode
@@ -63,7 +63,7 @@ function SpaceTreeNode({ id, depth, selectedId, onSelect, names, defaultOpen = f
       {open && children?.length === 0 && (
         <p
           style={{ paddingLeft: `${(depth + 1) * 16 + 4}px` }}
-          className="py-0.5 text-xs text-slate-400 italic"
+          className="py-0.5 text-sm text-slate-400 italic"
         >
           No children
         </p>
@@ -104,13 +104,13 @@ export function SpaceTree({ selectedId, onSelect }: Props) {
           placeholder="Search name or ID…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded border border-blue-100 px-2 py-1 text-xs outline-none focus:border-blue-400"
+          className="w-full rounded border border-blue-100 px-2 py-1 text-sm outline-none focus:border-blue-400"
         />
       </div>
       <div className="max-h-60 overflow-y-auto py-1">
         {searchResults ? (
           searchResults.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-slate-400 italic">No results</p>
+            <p className="px-3 py-2 text-sm text-slate-400 italic">No results</p>
           ) : (
             searchResults.map(({ id }) => (
               <SpaceTreeNode

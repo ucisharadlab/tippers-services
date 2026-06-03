@@ -2,6 +2,12 @@ import type { ThermalPrediction } from "../types/api";
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
+export async function fetchZones(): Promise<string[]> {
+  const res = await fetch(`${BASE}/services/thermal/zones`);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  return res.json();
+}
+
 export interface ThermalRangeParams {
   zoneId: string;
   modelType: "em" | "etotal" | "ec";

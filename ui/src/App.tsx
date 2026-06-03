@@ -6,6 +6,7 @@ import { MetadataStrip } from "./components/MetadataStrip";
 import { ErrorModal } from "./components/ErrorModal";
 import { PopularTimesChart } from "./components/PopularTimesChart";
 import { SpaceTree } from "./components/SpaceTree";
+import { VavList } from "./components/VavList";
 import { ThermalForm } from "./components/ThermalForm";
 import { ThermalChart } from "./components/ThermalChart";
 import { OptimizerForm } from "./components/OptimizerForm";
@@ -24,6 +25,7 @@ type Tab = "occupancy" | "thermal" | "optimizer";
 
 export default function App() {
   const [spaceId, setSpaceId] = useState(1);
+  const [zoneId, setZoneId] = useState("");
   const [tab, setTab] = useState<Tab>("occupancy");
 
   // Occupancy
@@ -67,29 +69,49 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left sidebar */}
-      <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
+      {/* Left sidebar — occupancy tab only */}
+      {tab === "occupancy" && <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
         <div className="border-b border-blue-100 px-4 py-4">
-          <h1 className="text-lg font-semibold text-blue-900">DataWhisk</h1>
-          <p className="text-xs text-slate-500">Occupancy &amp; forecast viewer</p>
+          <h1 className="text-xl font-semibold text-blue-900">DataWhisk</h1>
+          <p className="text-sm text-slate-500">Occupancy &amp; forecast viewer</p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Space</p>
+          <p className="mb-2 text-sm font-medium uppercase tracking-wide text-slate-500">Space</p>
           <SpaceTree selectedId={spaceId} onSelect={setSpaceId} />
-          <p className="mt-2 text-xs text-slate-500">
-            Selected: <span className="font-medium text-blue-700">Space {spaceId}</span>
+          <p className="mt-2 text-sm text-slate-500">
+            <span className="text-sm text-slate-500">Selected: </span><span className="text-sm font-medium text-blue-700">Space {spaceId}</span>
           </p>
         </div>
 
         <div className="border-t border-blue-100 p-3">
           <FetchDataForm />
         </div>
-      </aside>
+      </aside>}
+
+      {/* Left sidebar — thermal & optimizer tabs */}
+      {(tab === "thermal" || tab === "optimizer") && (
+        <aside className="flex w-72 shrink-0 flex-col border-r border-blue-100 bg-white">
+          <div className="border-b border-blue-100 px-4 py-4">
+            <h1 className="text-xl font-semibold text-blue-900">DataWhisk</h1>
+            <p className="text-sm text-slate-500">Thermal &amp; optimizer</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-3">
+            <p className="mb-2 text-sm font-medium uppercase tracking-wide text-slate-500">VAV Zone</p>
+            <VavList selectedId={zoneId} onSelect={setZoneId} />
+            {zoneId && (
+              <p className="mt-2 text-sm text-slate-500">
+                <span className="text-sm text-slate-500">Selected: </span><span className="text-sm font-medium text-blue-700">{zoneId}</span>
+              </p>
+            )}
+          </div>
+        </aside>
+      )}
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto bg-blue-50">
-        <div className="mx-auto max-w-4xl px-6 py-8">
+        <div className="mx-auto max-w-7xl px-6 py-8">
 
           {/* Tab bar */}
           <div className="mb-6 flex justify-center gap-2">
@@ -139,7 +161,7 @@ export default function App() {
               )}
 
               {!data && !error && !isLoading && (
-                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-base text-slate-400 shadow-sm">
                   Select a space and date range, then click Load.
                 </div>
               )}
@@ -151,6 +173,7 @@ export default function App() {
             <>
               <div className="mb-6">
                 <ThermalForm
+                  zoneId={zoneId}
                   onSubmit={setThermalParams}
                   isLoading={thermalLoading || thermalFetching}
                 />
@@ -171,8 +194,8 @@ export default function App() {
               )}
 
               {!thermalEm.data && !thermalEtotal.data && !thermalEc.data && !thermalError && !thermalLoading && (
-                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
-                  Fill in the parameters above, then click Load.
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-base text-slate-400 shadow-sm">
+                  Select a VAV zone from the sidebar, fill in the parameters, then click Load.
                 </div>
               )}
             </>
@@ -183,6 +206,7 @@ export default function App() {
             <>
               <div className="mb-6">
                 <OptimizerForm
+                  zoneId={zoneId}
                   onSubmit={setOptimizerParams}
                   isLoading={optimizerLoading || optimizerFetching}
                 />
@@ -199,8 +223,8 @@ export default function App() {
               )}
 
               {!optimizerData && !optimizerError && !optimizerLoading && (
-                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
-                  Fill in the parameters above, then click Optimize.
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-base text-slate-400 shadow-sm">
+                  Select a VAV zone from the sidebar, fill in the parameters, then click Optimize.
                 </div>
               )}
             </>

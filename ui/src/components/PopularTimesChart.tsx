@@ -35,7 +35,7 @@ function CustomTooltip({
   if (!active || !payload?.length) return null;
   const { hour, avg } = payload[0].payload;
   return (
-    <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs shadow-md">
+    <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-md">
       <p className="font-medium text-slate-700">{formatHour(hour).toUpperCase()}</p>
       {avg === null ? (
         <p className="text-slate-400">No data</p>
@@ -80,14 +80,14 @@ export function PopularTimesChart({ spaceId }: Props) {
 
   return (
     <div className="rounded-md border border-blue-100 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-sm font-semibold text-slate-700">Popular Times</h2>
+      <h2 className="mb-4 text-xl font-semibold text-slate-700">Popular Times</h2>
 
       <div className="mb-4 flex gap-1">
         {DAYS.map((day, idx) => (
           <button
             key={day}
             onClick={() => setSelectedDay(idx)}
-            className={`flex-1 rounded py-1 text-xs font-medium transition-colors ${
+            className={`flex-1 rounded py-1 text-sm font-medium transition-colors ${
               idx === selectedDay
                 ? "bg-blue-600 text-white"
                 : "text-slate-500 hover:bg-blue-50"
@@ -99,11 +99,11 @@ export function PopularTimesChart({ spaceId }: Props) {
       </div>
 
       {isLoading ? (
-        <div className="flex h-32 items-center justify-center text-xs text-slate-400">
+        <div className="flex h-32 items-center justify-center text-sm text-slate-400">
           Loading…
         </div>
       ) : !hasData ? (
-        <div className="flex h-32 items-center justify-center text-xs text-slate-400">
+        <div className="flex h-32 items-center justify-center text-sm text-slate-400">
           No historical data for this day
         </div>
       ) : (
@@ -113,7 +113,7 @@ export function PopularTimesChart({ spaceId }: Props) {
               dataKey="hour"
               tickLine={false}
               axisLine={false}
-              tick={{ fontSize: 11, fill: "#94a3b8" }}
+              tick={{ fontSize: 13, fill: "#94a3b8" }}
               tickFormatter={(h) => (TICK_HOURS.has(h) ? formatHour(h) : "")}
             />
             <YAxis hide domain={[0, maxVal * 1.25]} />
