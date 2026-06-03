@@ -194,7 +194,7 @@ export default function App() {
               )}
 
               {!thermalEm.data && !thermalEtotal.data && !thermalEc.data && !thermalError && !thermalLoading && (
-                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-base text-slate-400 shadow-sm">
                   Select a VAV zone from the sidebar, fill in the parameters, then click Load.
                 </div>
               )}
@@ -223,7 +223,7 @@ export default function App() {
               )}
 
               {!optimizerData && !optimizerError && !optimizerLoading && (
-                <div className="rounded-md border border-blue-100 bg-white p-6 text-sm text-slate-400 shadow-sm">
+                <div className="rounded-md border border-blue-100 bg-white p-6 text-base text-slate-400 shadow-sm">
                   Select a VAV zone from the sidebar, fill in the parameters, then click Optimize.
                 </div>
               )}

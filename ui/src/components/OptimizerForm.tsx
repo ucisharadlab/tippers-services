@@ -115,7 +115,7 @@ export function OptimizerForm({ zoneId, onSubmit, isLoading }: Props) {
         <button
           type="submit"
           disabled={isLoading || !zoneId}
-          className="self-end rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="self-end rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
         >
           {isLoading ? "Optimizing..." : "Optimize"}
         </button>
