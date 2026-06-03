@@ -47,8 +47,8 @@ export function ThermalChart({ em, etotal, ec }: Props) {
 
   return (
     <div className="rounded-md border border-blue-100 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-medium text-slate-700">Energy Usage Over Time</h2>
-      <div className="h-96 w-full">
+      <h2 className="mb-3 text-base font-semibold text-slate-700">Energy Usage Over Time</h2>
+      <div className="h-[30rem] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 8, right: 16, bottom: 8, left: 16 }}>
             <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -60,17 +60,17 @@ export function ThermalChart({ em, etotal, ec }: Props) {
               tickFormatter={(t) => format(new Date(t), "MMM d, ha")}
               minTickGap={40}
               stroke="#64748b"
-              fontSize={12}
+              fontSize={16}
             />
             <YAxis
               stroke="#64748b"
-              fontSize={12}
+              fontSize={16}
               tickFormatter={(v: number) => v.toFixed(4)}
               label={{
                 value: "kWh/min",
                 angle: -90,
                 position: "insideLeft",
-                fontSize: 11,
+                fontSize: 14,
                 fill: "#64748b",
                 dx: -8,
               }}

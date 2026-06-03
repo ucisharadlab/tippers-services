@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import type { ThermalBaseParams } from "../api/thermal";
 import { FieldLabel } from "./FieldLabel";
-import { useZones } from "../hooks/useZones";
 
 interface Props {
+  zoneId: string;
   onSubmit: (params: ThermalBaseParams) => void;
   isLoading: boolean;
 }
@@ -21,11 +21,9 @@ function defaultRange() {
   return { start, end };
 }
 
-export function ThermalForm({ onSubmit, isLoading }: Props) {
+export function ThermalForm({ zoneId, onSubmit, isLoading }: Props) {
   const { start: defaultStart, end: defaultEnd } = defaultRange();
-  const { data: zones } = useZones();
 
-  const [zoneId, setZoneId] = useState("");
   const [granularity, setGranularity] = useState<"local" | "global" | "intermediate">("local");
   const [zoneTemp, setZoneTemp] = useState("72");
   const [clgSetpoint, setClgSetpoint] = useState("75");
@@ -55,23 +53,11 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
       onSubmit={handleSubmit}
       className="rounded-md border border-blue-100 bg-white p-4 shadow-sm"
     >
-      <h3 className="mb-4 text-sm font-semibold text-slate-700">Thermal Energy Parameters</h3>
-      <div className="flex flex-wrap items-end gap-4">
-        <label className="flex flex-col text-sm">
-          <FieldLabel label="Zone ID" tip="The VAV box to analyze. Only zones with a deployed model are listed." />
-          <select
-            value={zoneId}
-            onChange={(e) => setZoneId(e.target.value)}
-            className="w-44 rounded border border-blue-200 px-3 py-2"
-            required
-          >
-            <option value="" disabled>Select a zone…</option>
-            {zones?.map((z) => (
-              <option key={z} value={z}>{z}</option>
-            ))}
-          </select>
-        </label>
-
+      <h3 className="mb-4 text-sm font-semibold text-slate-700">
+        Thermal Energy Parameters
+        {zoneId && <span className="ml-2 font-normal text-blue-600">— {zoneId}</span>}
+      </h3>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] items-end gap-4">
         <label className="flex flex-col text-sm">
           <FieldLabel label="Granularity" tip="Model scope: 'local' uses only this zone's data, 'global' uses building-wide data, 'intermediate' blends both." />
           <select
@@ -79,7 +65,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             onChange={(e) =>
               setGranularity(e.target.value as "local" | "global" | "intermediate")
             }
-            className="rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
           >
             <option value="local">local</option>
             <option value="global">global</option>
@@ -93,7 +79,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={zoneTemp}
             onChange={(e) => setZoneTemp(e.target.value)}
-            className="w-28 rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -104,7 +90,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={clgSetpoint}
             onChange={(e) => setClgSetpoint(e.target.value)}
-            className="w-28 rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -116,7 +102,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             value={htgSetpoint}
             onChange={(e) => setHtgSetpoint(e.target.value)}
             placeholder="optional"
-            className="w-28 rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
           />
         </label>
 
@@ -126,7 +112,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="number"
             value={ambientTemp}
             onChange={(e) => setAmbientTemp(e.target.value)}
-            className="w-28 rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -138,7 +124,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             value={intervalMinutes}
             onChange={(e) => setIntervalMinutes(e.target.value)}
             min={1}
-            className="w-24 rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -149,7 +135,7 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="datetime-local"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            className="rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
@@ -160,15 +146,15 @@ export function ThermalForm({ onSubmit, isLoading }: Props) {
             type="datetime-local"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            className="rounded border border-blue-200 px-3 py-2"
+            className="w-full rounded border border-blue-200 px-3 py-2"
             required
           />
         </label>
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          disabled={isLoading || !zoneId}
+          className="self-end rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
         >
           {isLoading ? "Loading..." : "Load"}
         </button>

@@ -25,9 +25,9 @@ interface Props {
 }
 
 const STATE_COLORS: Record<OptimizerInterval["state"], string> = {
-  cooling:     "#ef4444",
-  maintaining: "#f59e0b",
-  off:         "#94a3b8",
+  cooling:     "#3b82f6",
+  maintaining: "#94a3b8",
+  off:         "#cbd5e1",
 };
 
 // Shared chart margins — all panels use the same left/right so axes align vertically.
@@ -103,7 +103,7 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
     tickFormatter: (t: number) => format(new Date(t), "HH:mm"),
     minTickGap:    40,
     stroke:        "#64748b",
-    fontSize:      11,
+    fontSize:      15,
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -144,10 +144,10 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
       {/* ── MULTI-DAY: per-day cost comparison ──────────────────────────────── */}
       {!isSingleDay && (
         <div>
-          <p className="mb-1 text-sm font-medium text-slate-700">
+          <p className="mb-1 text-base font-semibold text-slate-700">
             Daily Cost — Optimized vs Naive ($)
           </p>
-          <div className="h-64 w-full">
+          <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={dayChartData}
@@ -155,10 +155,10 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
                 barCategoryGap="20%"
               >
                 <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
-                <XAxis dataKey="date" stroke="#64748b" fontSize={11} />
+                <XAxis dataKey="date" stroke="#64748b" fontSize={15} />
                 <YAxis
                   stroke="#64748b"
-                  fontSize={11}
+                  fontSize={15}
                   tickFormatter={(v: number) => `$${v.toFixed(2)}`}
                 />
                 <Tooltip
@@ -181,14 +181,14 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
       {/* ── SINGLE-DAY: three-panel chart ───────────────────────────────────── */}
       {isSingleDay && intervalData.length > 0 && (
         <div className="space-y-0">
-          <p className="text-sm font-semibold text-slate-800 text-center mb-2">
+          <p className="text-base font-semibold text-slate-800 text-center mb-2">
             24-Hour Plan — {data.zone_id} &mdash; {data.days[0].date}
           </p>
 
           {/* Panel 1: Temperature */}
           <div>
-            <p className="mb-1 text-xs font-medium text-slate-500 ml-1">Zone Temperature (°F)</p>
-            <div className="h-56 w-full">
+            <p className="mb-1 text-sm font-medium text-slate-500 ml-1">Zone Temperature (°F)</p>
+            <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={intervalData} syncId="opt-day" margin={MARGIN}>
                   {/* Background: occupied hours (light blue) */}
@@ -211,7 +211,7 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
                   ))}
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                   <XAxis {...xAxisTimeProps} tick={false} />
-                  <YAxis stroke="#64748b" fontSize={11} domain={["auto", "auto"]} width={40} />
+                  <YAxis stroke="#64748b" fontSize={15} domain={["auto", "auto"]} width={40} />
                   <Tooltip
                     labelFormatter={(t) => format(new Date(t as number), "HH:mm")}
                     formatter={(v: number, name: string) => [
@@ -225,19 +225,19 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
                       if (v === "naive_temperature") return "Naive baseline temperature";
                       return v;
                     }}
-                    wrapperStyle={{ fontSize: 11 }}
+                    wrapperStyle={{ fontSize: 15 }}
                   />
                   <ReferenceLine
                     y={clgSetpoint}
                     stroke="#94a3b8"
                     strokeDasharray="4 3"
-                    label={{ value: `Setpoint ${clgSetpoint}°F`, position: "insideTopRight", fontSize: 10, fill: "#94a3b8" }}
+                    label={{ value: `Setpoint ${clgSetpoint}°F`, position: "insideTopRight", fontSize: 13, fill: "#94a3b8" }}
                   />
                   <ReferenceLine
                     y={clgSetpoint + 2}
                     stroke="#ef4444"
                     strokeDasharray="4 3"
-                    label={{ value: `Max comfort ${clgSetpoint + 2}°F`, position: "insideTopRight", fontSize: 10, fill: "#ef4444" }}
+                    label={{ value: `Max comfort ${clgSetpoint + 2}°F`, position: "insideTopRight", fontSize: 13, fill: "#ef4444" }}
                   />
                   <Line
                     type="monotone"
@@ -265,7 +265,7 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
 
           {/* Panel 2: HVAC state */}
           <div>
-            <p className="mb-0.5 text-xs font-medium text-slate-500 ml-1">HVAC State</p>
+            <p className="mb-0.5 text-sm font-medium text-slate-500 ml-1">HVAC State</p>
             <div className="h-16 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -309,7 +309,7 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
 
           {/* Panel 3: TOU price */}
           <div className="mt-2">
-            <p className="mb-0.5 text-xs font-medium text-slate-500 ml-1">Price ($/kWh)</p>
+            <p className="mb-0.5 text-sm font-medium text-slate-500 ml-1">Price ($/kWh)</p>
             <div className="h-24 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={intervalData} syncId="opt-day" margin={MARGIN_BOTTOM}>
@@ -324,11 +324,11 @@ export function OptimizerChart({ data, clgSetpoint }: Props) {
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
                   <XAxis
                     {...xAxisTimeProps}
-                    label={{ value: "Time of Day (UTC)", position: "insideBottomRight", offset: -8, fontSize: 10, fill: "#64748b" }}
+                    label={{ value: "Time of Day (UTC)", position: "insideBottomRight", offset: -8, fontSize: 13, fill: "#64748b" }}
                   />
                   <YAxis
                     stroke="#64748b"
-                    fontSize={11}
+                    fontSize={15}
                     domain={[0, 0.6]}
                     ticks={[0.18, 0.5]}
                     tickFormatter={(v: number) => `$${v.toFixed(2)}`}

@@ -43,10 +43,10 @@ export function OccupancyChart({ data }: Props) {
 
   return (
     <div className="rounded-md border border-blue-100 bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-sm font-medium text-slate-700">
+      <h2 className="mb-3 text-xl font-semibold text-slate-700">
         Occupancy — history vs. forecast
       </h2>
-      <div className="h-96 w-full">
+      <div className="h-[30rem] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
             <CartesianGrid stroke="#e2e8f0" strokeDasharray="3 3" />
@@ -58,9 +58,9 @@ export function OccupancyChart({ data }: Props) {
               tickFormatter={(t) => format(new Date(t), "MMM d, ha")}
               minTickGap={40}
               stroke="#64748b"
-              fontSize={12}
+              fontSize={16}
             />
-            <YAxis stroke="#64748b" fontSize={12} allowDecimals={false} domain={[0, 16]} />
+            <YAxis stroke="#64748b" fontSize={16} allowDecimals={false} domain={[0, 16]} />
             <Tooltip
               labelFormatter={(t) => format(new Date(t as number), "MMM d, yyyy h:mm a")}
               formatter={(value: number, name) => [
@@ -73,7 +73,7 @@ export function OccupancyChart({ data }: Props) {
               x={lastObservedMs}
               stroke="#94a3b8"
               strokeDasharray="4 4"
-              label={{ value: "now", position: "top", fontSize: 11, fill: "#64748b" }}
+              label={{ value: "now", position: "top", fontSize: 14, fill: "#64748b" }}
             />
             <Line
               type="monotone"
