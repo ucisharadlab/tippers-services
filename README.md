@@ -227,7 +227,7 @@ A successful response includes `historical`, `forecast`, `model_version`, and `m
 - Thermal and optimizer models currently require the user to know the zone ID string (e.g. `VAV-101`) — there is no lookup or autocomplete for zone IDs in the UI.
 - Model training is triggered manually; there is no scheduled retraining pipeline yet.
 - The `@production` alias must be set manually in MLflow or via the Model sidebar after each training run.
-- No hosted MLFlow server yet. However that will be worked on in subsequent iterations.
+- MLflow is currently running locally. Hosting it on a shared server is planned for a future release.
 
 **Potential future work:**
 - Scheduled Dagster jobs for automatic nightly model retraining.
