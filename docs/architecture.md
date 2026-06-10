@@ -139,6 +139,7 @@ The `shared/` package is **framework-free**. It never imports from `fastapi`, `d
 
 ## Cross-references
 
+- **Database schema**: [`database-schema.md`](database-schema.md)
 - **Add a new table**: [`adding-a-table.md`](adding-a-table.md)
 - **Add a new API endpoint**: [`adding-an-endpoint.md`](adding-an-endpoint.md)
 - **Add a new Dagster asset**: [`adding-a-dagster-asset.md`](adding-a-dagster-asset.md)

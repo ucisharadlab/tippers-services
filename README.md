@@ -14,7 +14,7 @@ DataWhisk ingests historical sensor data from a PostgreSQL database, trains per-
 | :--- | :--- |
 | **Gabriel Gomes** | Occupancy model science — per-space time-series models, occupancy data injestion and pipelines, Dagster assets, MLflow registry, React UI |
 | **Atharva** | Thermal model science — physics-informed $E_c$ (cooling) and $E_h$ (heating) regression models |
-| **Vivek** | Systems architecture — FastAPI gateway, Dagster orchestration, Docker Compose infrastructure |
+| **Vivek** | Systems architecture — FastAPI gateway, Dagster orchestration, Docker Compose infrastructure, Dagster assets, MLflow registry, React UI, Thermal model science — physics-informed $E_c$ (cooling) and $E_h$ (heating) regression models |
 
 ---
 
